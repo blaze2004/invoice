@@ -44,6 +44,8 @@ dependencies:
   flutter_email_sender: ^6.0.3
   open_file_plus: ^3.4.1+1
   flutter_mailer: ^2.1.2
+  shadcn_ui: ^0.8.1
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -88,8 +90,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - .env
-    - assets/
+    - /media/notfakeanshu/Acer/Flutter/invoice/.env
+    - assets/dp.jpg    
+    - assets/ProfileLogo.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

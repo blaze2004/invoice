@@ -1,7 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:invoice/invoice_form.dart';
+import 'package:invoice/login_page.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/popup.dart';
@@ -211,7 +211,10 @@ class _InvoicePageState extends State<InvoicePage> {
           IconButton(
             onPressed: () {
               if (session == null) {
-                Navigator.of(context).pushReplacementNamed("/login");
+                // Navigator.of(context).pushReplacementNamed("/login");
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return const LoginPage();
+                }));
               } else {
                 _logOut();
               }
