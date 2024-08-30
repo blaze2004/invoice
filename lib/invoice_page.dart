@@ -211,7 +211,8 @@ class _InvoicePageState extends State<InvoicePage> {
           IconButton(
             onPressed: () {
               if (session == null) {
-                Navigator.of(context).pushReplacementNamed("/login");
+                Navigator.of(context).pushNamed("/signup");
+                // Navigator.of(context).pushNamed("/login");
               } else {
                 _logOut();
               }
