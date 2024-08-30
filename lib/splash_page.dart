@@ -19,7 +19,7 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) {
       return;
     }
-    Navigator.of(context).pushNamed('/invoice');
+    Navigator.of(context).pushReplacementNamed('/invoice');
   }
 
   @override

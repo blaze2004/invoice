@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:invoice/invoice_page.dart';
-import 'package:invoice/login_page.dart';
-// import 'package:invoice/screens/first_login_signup.dart';
 import 'package:invoice/splash_page.dart';
+import 'package:invoice/views/auth/signin.dart';
 import 'package:invoice/views/auth/signup.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -39,7 +38,7 @@ class InvoiceApp extends StatelessWidget {
       routes: <String, WidgetBuilder>{
         '/': (_) => const SplashPage(),
         '/invoice': (_) => const InvoicePage(),
-        '/login': (_) => const LoginPage(),
+        '/login': (_) => const SignInPage(),
         '/signup': (_) => const SignUpPage(),
       },
       debugShowCheckedModeBanner: false,
