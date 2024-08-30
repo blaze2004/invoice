@@ -21,7 +21,7 @@ class _SignUpPageState extends State<SignUpPage> {
           children: [
             Center(
               child: Text(
-                'The People of the Kingdom',
+                'Signup',
                 style: ShadTheme.of(context).textTheme.h2,
               ),
             ),
