@@ -5,9 +5,10 @@ import 'package:invoice/screens/first_login_signup.dart';
 import 'package:invoice/splash_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   await dotenv.load(fileName: ".env");
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
@@ -29,13 +30,13 @@ class InvoiceApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const FirstLoginSignup(),
-      // initialRoute: "/",
-      // routes: <String, WidgetBuilder>{
-      //   '/': (_) => const SplashPage(),
-      //   '/invoice': (_) => const InvoicePage(),
-      //   '/login': (_) => const LoginPage(),
-      // },
+      // home: const FirstLoginSignup(),
+      initialRoute: "/",
+      routes: <String, WidgetBuilder>{
+        '/': (_) => const SplashPage(),
+        '/invoice': (_) => const InvoicePage(),
+        '/login': (_) => const FirstLoginSignup(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }

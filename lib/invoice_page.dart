@@ -211,10 +211,7 @@ class _InvoicePageState extends State<InvoicePage> {
           IconButton(
             onPressed: () {
               if (session == null) {
-                // Navigator.of(context).pushReplacementNamed("/login");
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return const LoginPage();
-                }));
+                Navigator.of(context).pushReplacementNamed("/login");
               } else {
                 _logOut();
               }
