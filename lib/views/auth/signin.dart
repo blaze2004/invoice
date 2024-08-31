@@ -19,10 +19,6 @@ class _SignInPageState extends State<SignInPage> {
   bool isLoading = false;
 
   void signIn() async {
-    if (!mounted) {
-      return;
-    }
-
     setState(() => isLoading = true);
 
     if (formKey.currentState!.validate()) {
@@ -34,26 +30,32 @@ class _SignInPageState extends State<SignInPage> {
         );
 
         if (res.user != null) {
-          ShadToaster.of(context).show(
-            const ShadToast(
-              title: Text('Welcome back!'),
-            ),
-          );
+          if (mounted) {
+            ShadToaster.of(context).show(
+              const ShadToast(
+                title: Text('Welcome back!'),
+              ),
+            );
+          }
         } else {
+          if (mounted) {
+            ShadToaster.of(context).show(
+              const ShadToast.destructive(
+                title: Text('Login failed'),
+                description: Text('Please try again.'),
+              ),
+            );
+          }
+        }
+      } on AuthException catch (e) {
+        if (mounted) {
           ShadToaster.of(context).show(
-            const ShadToast.destructive(
-              title: Text('Login failed'),
-              description: Text('Please try again.'),
+            ShadToast.destructive(
+              title: const Text("Login failed"),
+              description: Text(e.message),
             ),
           );
         }
-      } on AuthException catch (e) {
-        ShadToaster.of(context).show(
-          ShadToast.destructive(
-            title: const Text("Login failed"),
-            description: Text(e.message),
-          ),
-        );
       }
     }
 

@@ -35,14 +35,14 @@ class InvoiceApp extends StatelessWidget {
         colorScheme: const ShadBlueColorScheme.light(),
         brightness: Brightness.light,
       ),
-      home: const Dashboard(),
-      // initialRoute: "/",
-      // routes: <String, WidgetBuilder>{
-      //   '/': (_) => const SplashPage(),
-      //   '/invoice': (_) => const InvoicePage(),
-      //   '/login': (_) => const SignInPage(),
-      //   '/signup': (_) => const SignUpPage(),
-      // },
+      initialRoute: "/",
+      routes: <String, WidgetBuilder>{
+        '/': (_) => const SplashPage(),
+        '/invoice': (_) => const InvoicePage(),
+        '/login': (_) => const SignInPage(),
+        '/signup': (_) => const SignUpPage(),
+        '/dashboard': (_) => const Dashboard(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }

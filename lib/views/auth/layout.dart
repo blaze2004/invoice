@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:invoice/constants/constants.dart';
+import 'package:invoice/main.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AuthLayout extends StatelessWidget {
+class AuthLayout extends StatefulWidget {
   const AuthLayout({
     super.key,
     required this.child,
@@ -11,6 +15,36 @@ class AuthLayout extends StatelessWidget {
 
   final Widget child;
   final String title;
+
+  @override
+  State<AuthLayout> createState() => _AuthLayoutState();
+}
+
+class _AuthLayoutState extends State<AuthLayout> {
+  late final StreamSubscription<AuthState> _authStateSubscription;
+
+  bool _redirecting = false;
+
+  @override
+  void initState() {
+    _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
+      if (_redirecting) return;
+      final session = data.session;
+      if (session != null) {
+        _redirecting = true;
+        if (mounted) {
+          Navigator.of(context).pushNamed('/dashboard');
+        }
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _authStateSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +72,7 @@ class AuthLayout extends StatelessWidget {
                 //   ),
                 // ),
                 const SizedBox(height: defaultPadding),
-                child
+                widget.child
               ],
             ),
           ),

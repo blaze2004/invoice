@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:invoice/constants/constants.dart';
 import 'package:invoice/main.dart';
@@ -13,99 +16,121 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-
   final formKey = GlobalKey<ShadFormState>();
 
   bool isLoading = false;
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
 
-  
-
   void signUp() async {
-    if (!mounted) return;
-
     setState(() {
       isLoading = true;
     });
 
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-       if (formKey.currentState!.value['organization_name'] != null ||
-            formKey.currentState!.value['organization_code'] != null) {
-      try {
-        bool exists = true;
-        if (formKey.currentState!.value['organization_code'] != null) {
-          exists = await isOrganizationIdPresent(formKey.currentState!.value['organization_code']);
-        }
+      if ((formKey.currentState!.value['organization_name'] != null &&
+              formKey.currentState!.value['organization_name'] != "") ||
+          (formKey.currentState!.value['organization_code'] != null &&
+              formKey.currentState!.value['organization_code'] != "")) {
+        try {
+          String? organizationId;
+          if (formKey.currentState!.value['organization_code'] != null &&
+              formKey.currentState!.value['organization_code'] != "") {
+            organizationId = await isOrganizationIdPresent(
+                formKey.currentState!.value['organization_code']);
 
-        if (exists) {
+            if (organizationId == null) {
+              if (mounted) {
+                ShadToaster.of(context).show(
+                  const ShadToast.destructive(
+                    title: Text('Invalid organization code'),
+                    description: Text('Wrong code'),
+                  ),
+                );
+                setState(() {
+                  isLoading = false;
+                });
+              }
+              return;
+            }
+          }
+
           final AuthResponse res = await supabase.auth.signUp(
             email: formKey.currentState!.value['email'],
             password: formKey.currentState!.value['password'],
+            emailRedirectTo:
+                kIsWeb ? null : 'io.supabase.invoice://login-callback/',
             data: {
-              'full_name': formKey.currentState!.value['username'],
-              'organization_name': formKey.currentState!.value['organization_name'],
-              'organization_code': formKey.currentState!.value['organization_code'],
+              'full_name': formKey.currentState!.value['full_name'],
+              'organization_name':
+                  formKey.currentState!.value['organization_name'],
+              'organization_id': organizationId ?? '',
             },
           );
 
           if (res.user != null) {
-            ShadToaster.of(context).show(
-              const ShadToast(
-                title: Text('Please verify your email.'),
-              ),
-            );
+            if (mounted) {
+              ShadToaster.of(context).show(
+                const ShadToast(
+                  title: Text('Please verify your email.'),
+                  description:
+                      Text('Check your email for a verification link.'),
+                ),
+              );
+            }
           } else {
+            if (mounted) {
+              ShadToaster.of(context).show(
+                const ShadToast.destructive(
+                  title: Text('Sign up failed'),
+                  description: Text('Please try again.'),
+                ),
+              );
+            }
+          }
+        } on AuthException catch (e) {
+          if (mounted) {
             ShadToaster.of(context).show(
-              const ShadToast.destructive(
-                title: Text('Sign up failed'),
-                description: Text('Please try again.'),
+              ShadToast.destructive(
+                title: const Text("Sign up failed"),
+                description: Text(e.message),
               ),
             );
           }
-        } else {
-          ShadToaster.of(context).show(
-            const ShadToast.destructive(
-              title: Text('Invalid organization code'),
-              description: Text('Wrong code'),
-            ),
-          );
+        } finally {
+          setState(() {
+            isLoading = false;
+          });
         }
-      } on AuthException catch (e) {
+      } else {
         ShadToaster.of(context).show(
-          ShadToast.destructive(
-            title: const Text("Sign up failed"),
-            description: Text(e.message),
+          const ShadToast.destructive(
+            title: Text('Organization name or code is required'),
+            description: Text('Please enter organization name or code.'),
           ),
         );
-      } finally {
         setState(() {
           isLoading = false;
         });
       }
-    } else {
-      setState(() {
-        isLoading = false;
-      });
     }
-    }
-    
   }
-  Future<bool> isOrganizationIdPresent(String organizationId) async {
-  try {
-    final response = await supabase
-        .from('organizations')
-        .select('slug')
-        .eq('slug', organizationId)
-        .maybeSingle();
 
-    return response != null;
-  } catch (e) {
-    print('Error checking organization code: $e');
-    return false;
+  Future<String?> isOrganizationIdPresent(String organizationId) async {
+    try {
+      final response = await supabase
+          .from('organizations')
+          .select('slug, organization_id')
+          .eq('slug', organizationId)
+          .maybeSingle();
+
+      return response?['organization_id'];
+    } catch (e) {
+      log('Error checking organization code: $e');
+      return null;
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +143,7 @@ class _SignUpPageState extends State<SignUpPage> {
           child: Column(
             children: [
               ShadInputFormField(
-                id: 'username',
+                id: 'full_name',
                 placeholder: const Text('Name'),
                 validator: (v) {
                   if (v.length < 2) {
