@@ -208,18 +208,18 @@ class _InvoicePageState extends State<InvoicePage> {
             },
             icon: const Icon(Icons.add),
           ),
-          IconButton(
-            onPressed: () {
-              if (session == null) {
-                Navigator.of(context).pushNamed("/login");
-              } else {
-                _logOut();
-              }
-            },
-            icon: session == null
-                ? const Icon(Icons.login)
-                : const Icon(Icons.logout),
-          )
+          // IconButton(
+          //   onPressed: () {
+          //     if (session == null) {
+          //       Navigator.of(context).pushNamed("/login");
+          //     } else {
+          //       _logOut();
+          //     }
+          //   },
+          //   icon: session == null
+          //       ? const Icon(Icons.login)
+          //       : const Icon(Icons.logout),
+          // )
         ],
       ),
       body: Builder(
