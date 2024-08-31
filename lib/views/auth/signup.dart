@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:invoice/constants/constants.dart';
-import 'package:invoice/main.dart';
 import 'package:invoice/views/auth/layout.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,16 +12,17 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  final supabase = Supabase.instance.client; // Make sure this is initialized
   final formKey = GlobalKey<ShadFormState>();
 
   bool isLoading = false;
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
 
+  
+
   void signUp() async {
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
 
     setState(() {
       isLoading = true;
@@ -30,18 +30,22 @@ class _SignUpPageState extends State<SignUpPage> {
 
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-      try {
-        if (formKey.currentState!.value['organization_name'] != null ||
+       if (formKey.currentState!.value['organization_name'] != null ||
             formKey.currentState!.value['organization_code'] != null) {
+      try {
+        bool exists = true;
+        if (formKey.currentState!.value['organization_code'] != null) {
+          exists = await isOrganizationIdPresent(formKey.currentState!.value['organization_code']);
+        }
+
+        if (exists) {
           final AuthResponse res = await supabase.auth.signUp(
             email: formKey.currentState!.value['email'],
             password: formKey.currentState!.value['password'],
             data: {
               'full_name': formKey.currentState!.value['username'],
-              'organization_name':
-                  formKey.currentState!.value['organization_name'],
-              'organization_code':
-                  formKey.currentState!.value['organization_code'],
+              'organization_name': formKey.currentState!.value['organization_name'],
+              'organization_code': formKey.currentState!.value['organization_code'],
             },
           );
 
@@ -62,9 +66,8 @@ class _SignUpPageState extends State<SignUpPage> {
         } else {
           ShadToaster.of(context).show(
             const ShadToast.destructive(
-              title: Text('Sign up failed'),
-              description:
-                  Text('Please enter either organization name or code.'),
+              title: Text('Invalid organization code'),
+              description: Text('Wrong code'),
             ),
           );
         }
@@ -75,13 +78,33 @@ class _SignUpPageState extends State<SignUpPage> {
             description: Text(e.message),
           ),
         );
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
       }
+    } else {
+      setState(() {
+        isLoading = false;
+      });
     }
-
-    setState(() {
-      isLoading = false;
-    });
+    }
+    
   }
+  Future<bool> isOrganizationIdPresent(String organizationId) async {
+  try {
+    final response = await supabase
+        .from('organization')
+        .select('organization_id')
+        .eq('organization_id', organizationId)
+        .maybeSingle();
+
+    return response != null;
+  } catch (e) {
+    print('Error checking organization ID: $e');
+    return false;
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -118,22 +141,15 @@ class _SignUpPageState extends State<SignUpPage> {
                 placeholder: const Text('Password'),
                 obscureText: obscurePassword,
                 validator: (v) {
-                  // at least 8 characters
                   if (v.length < 8) {
                     return 'Password must be at least 8 characters.';
                   }
-
-                  // at least one digit
                   if (!RegExp(r'\d').hasMatch(v)) {
                     return 'Password must contain at least one digit.';
                   }
-
-                  // at least one uppercase letter
                   if (!RegExp(r'[A-Z]').hasMatch(v)) {
                     return 'Password must contain at least one uppercase letter.';
                   }
-
-                  // at least one lowercase letter
                   if (!RegExp(r'[a-z]').hasMatch(v)) {
                     return 'Password must contain at least one lowercase letter.';
                   }
@@ -234,7 +250,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   padding: EdgeInsets.all(4.0),
                   child: ShadImage.square(size: 16, LucideIcons.building),
                 ),
-                placeholder: const Text('Organization code'),
+                placeholder: const Text('Organization Code'),
                 keyboardType: TextInputType.text,
               ),
               ShadButton(
