@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:invoice/main.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -19,7 +21,12 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) {
       return;
     }
-    Navigator.of(context).pushReplacementNamed('/invoice');
+    Session? session = supabase.auth.currentSession;
+    if (session != null) {
+      Navigator.of(context).pushReplacementNamed('/dashboard');
+    } else {
+      Navigator.of(context).pushReplacementNamed('/login');
+    }
   }
 
   @override

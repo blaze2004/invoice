@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:invoice/main.dart';
@@ -80,10 +81,16 @@ class OptionsPopup extends StatelessWidget {
           localInvoiceDataSet,
           isDB: true,
         )[invoiceDataKey];
-        data["email"] = supabase.auth.currentSession!.user.email;
+        final orgInfo =
+            await supabase.from("organizations").select().limit(1).single();
+        data["created_by"] = supabase.auth.currentSession!.user.id;
+        data["organization_id"] = orgInfo["organization_id"];
+        data["invoiceDate"] =
+            DateFormat("dd-MM-yyyy").parse(data["invoiceDate"]).toIso8601String();
         try {
           await supabase.from("invoice").upsert(data);
         } catch (error) {
+          log("$error");
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Error saving invoice to cloud."),

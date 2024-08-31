@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-class EachInvoice extends StatefulWidget {
-  const EachInvoice({super.key});
+class InvoiceActionsView extends StatefulWidget {
+  const InvoiceActionsView({super.key});
 
   @override
-  State<EachInvoice> createState() {
-    return _EachInvoice();
+  State<InvoiceActionsView> createState() {
+    return _InvoiceActionsView();
   }
 }
 
-class _EachInvoice extends State<EachInvoice> {
+class _InvoiceActionsView extends State<InvoiceActionsView> {
   bool approve = false;
   @override
   Widget build(context) {

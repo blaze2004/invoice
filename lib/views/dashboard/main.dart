@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:invoice/invoice_page.dart';
+import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
-import 'package:invoice/screens/each_invoice.dart';
+import 'package:invoice/views/dashboard/view_invoice.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -30,18 +32,45 @@ List<Invoice> inoboxitems = [
 ];
 
 class _Dashboard extends State<Dashboard> {
+  Session? session = supabase.auth.currentSession;
+
+  String getName() {
+    String name = (session?.user.userMetadata?['full_name'].toString() ?? "")
+        .split(" ")[0];
+    return name[0].toUpperCase() + name.substring(1);
+  }
+
+  Future<void> _logOut() async {
+    await supabase.auth.signOut();
+    setState(() {
+      session = supabase.auth.currentSession;
+    });
+    if (mounted) {
+      Navigator.of(context).restorablePushReplacementNamed('/login');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (session == null) {
+      Navigator.of(context).restorablePushReplacementNamed('/login');
+    }
+  }
+
   @override
   Widget build(context) {
     return Scaffold(
       backgroundColor: ShadTheme.of(context).colorScheme.background,
       appBar: AppBar(
-        title: const Text(
-          "Name",
+        title: Text(
+          getName(),
         ), //Add person's  Name logic
         actions: [
           IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.logout)) //Add logout button
+            onPressed: _logOut,
+            icon: const Icon(Icons.logout),
+          )
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -88,7 +117,7 @@ class _Dashboard extends State<Dashboard> {
                   onTap: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
-                      return const EachInvoice();
+                      return const InvoiceActionsView();
                     }));
                   }, //Tap to see Each invoice details
                   child: Column(

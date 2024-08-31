@@ -1,7 +1,7 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:invoice/invoice_form.dart';
-import 'package:invoice/login_page.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/popup.dart';
@@ -54,11 +54,17 @@ class _InvoicePageState extends State<InvoicePage> {
     await Future.delayed(const Duration(milliseconds: 500));
     Map<String, dynamic> data =
         mapObjectToJson(localInvoiceDataSet, isDB: true);
+    final orgInfo =
+        await supabase.from("organizations").select().limit(1).single();
     data.forEach((key, value) async {
-      value["email"] = session!.user.email;
+      value["created_by"] = session!.user.id;
+      value["organization_id"] = orgInfo["organization_id"];
+      value["invoiceDate"] =
+          DateFormat("dd-MM-yyyy").parse(value["invoiceDate"]).toIso8601String();
       try {
         await supabase.from("invoice").upsert(value);
-      } on PostgrestException {
+      } on PostgrestException catch (e) {
+        log(e.message);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Error saving invoices to cloud."),
@@ -179,15 +185,9 @@ class _InvoicePageState extends State<InvoicePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        title: const Row(
           children: [
-            Image.asset(
-              'assets/logo.png',
-              width: 42,
-              height: 42,
-            ),
-            const SizedBox(width: 8),
-            const Text('e-Invoice'),
+            Text('Invoice'),
           ],
         ),
         actions: [

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:invoice/invoice_page.dart';
-import 'package:invoice/screens/dashBoard.dart';
 import 'package:invoice/splash_page.dart';
 import 'package:invoice/views/auth/signin.dart';
 import 'package:invoice/views/auth/signup.dart';
+import 'package:invoice/views/dashboard/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
