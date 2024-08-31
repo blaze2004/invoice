@@ -1,9 +1,12 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:invoice/invoice_page.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/views/dashboard/view_invoice.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Dashboard extends StatefulWidget {
@@ -15,24 +18,12 @@ class Dashboard extends StatefulWidget {
   }
 }
 
-DateTime now = DateTime.now();
-int currIndex = 0;
-Person person = Person(
-    name: "Rob", city: "New York", zipCode: 12805, phoneNumber: "123456789");
-List<Invoice> inoboxitems = [
-  Invoice(
-      invoiceNumber: 12,
-      invoiceDate: "01/01/2000",
-      billTo: person,
-      from: person,
-      items: [],
-      totalAmount: 69,
-      createdDate: now,
-      updatedDate: now)
-];
-
 class _Dashboard extends State<Dashboard> {
   Session? session = supabase.auth.currentSession;
+  List<Invoice> _inboxItems = [];
+  List<Invoice> _draftItems = [];
+
+  int currIndex = 0;
 
   String getName() {
     String name = (session?.user.userMetadata?['full_name'].toString() ?? "")
@@ -40,6 +31,39 @@ class _Dashboard extends State<Dashboard> {
     return name.length > 1
         ? name[0].toUpperCase() + name.substring(1)
         : name.toUpperCase();
+  }
+
+  Future<void> getInvoices() async {
+    List<Map<String, dynamic>> invoices = [];
+    if (session == null) {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? localInvoiceData = prefs.getString("localInvoiceData");
+      if (localInvoiceData != null) {
+        jsonDecode(localInvoiceData).forEach((key, value) {
+          invoices.add(value);
+        });
+      }
+    } else {
+      final data = await supabase.from("invoice").select('*');
+      for (var element in data) {
+        invoices.add(element);
+      }
+    }
+
+    List<Invoice> inboxItems = [];
+    List<Invoice> draftItems = [];
+
+    for (var element in invoices) {
+      if (element['state'] == 'draft') {
+        draftItems.add(Invoice.fromJson(element, isDB: true));
+      } else {
+        inboxItems.add(Invoice.fromJson(element, isDB: true));
+      }
+    }
+    setState(() {
+      _inboxItems = inboxItems;
+      _draftItems = draftItems;
+    });
   }
 
   Future<void> _logOut() async {
@@ -57,17 +81,21 @@ class _Dashboard extends State<Dashboard> {
     super.initState();
     if (session == null) {
       Navigator.of(context).restorablePushReplacementNamed('/login');
+    } else {
+      getInvoices();
     }
   }
 
   @override
   Widget build(context) {
+    List<Invoice> items = (currIndex == 0) ? _inboxItems : _draftItems;
+    log("Currintex: $currIndex");
     return Scaffold(
       backgroundColor: ShadTheme.of(context).colorScheme.background,
       appBar: AppBar(
         title: Text(
           getName(),
-        ), //Add person's  Name logic
+        ),
         actions: [
           IconButton(
             onPressed: _logOut,
@@ -83,9 +111,7 @@ class _Dashboard extends State<Dashboard> {
           size: 30,
         ),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return const InvoicePage();
-          }));
+          Navigator.of(context).pushNamed('/invoice');
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -104,7 +130,7 @@ class _Dashboard extends State<Dashboard> {
           });
         },
       ),
-      body: (inoboxitems.isEmpty)
+      body: (items.isEmpty)
           ? const Center(
               child: Text(
                 "No Invoice Found!",
@@ -113,7 +139,8 @@ class _Dashboard extends State<Dashboard> {
             )
           : ListView.builder(
               // physics: const BouncingScrollPhysics(),
-              itemCount: inoboxitems.length,
+              shrinkWrap: true,
+              itemCount: items.length,
               itemBuilder: (ctx, index) {
                 return InkWell(
                   onTap: () {
@@ -122,42 +149,22 @@ class _Dashboard extends State<Dashboard> {
                       return const InvoiceActionsView();
                     }));
                   }, //Tap to see Each invoice details
-                  child: Column(
-                    children: [
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        title: titlePart("Jammie", "Inv1"),
-                        trailing: trailingPart(200, true),
-                      ),
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        title: titlePart("Tony", "Inv2"),
-                        trailing: trailingPart(150, false),
-                      ),
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        title: titlePart("Brock", "Inv3"),
-                        trailing: trailingPart(300, false),
-                      ),
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        title: titlePart("John", "Inv4"),
-                        trailing: trailingPart(699, true),
-                      ),
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        title: titlePart("Cole", "Inv5"),
-                        trailing: trailingPart(799, true),
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        titlePart(items[index].filename,
+                            items[index].invoiceNumber.toString()),
+                        trailingPart(
+                            items[index].totalAmount, items[index].state),
+                      ],
+                    ),
                   ),
                 );
-              }),
+              },
+            ),
     );
   }
 
@@ -196,7 +203,7 @@ class _Dashboard extends State<Dashboard> {
     );
   }
 
-  Widget trailingPart(double amount, bool status) {
+  Widget trailingPart(double amount, String status) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -207,9 +214,13 @@ class _Dashboard extends State<Dashboard> {
         ),
         const SizedBox(height: 4),
         Text(
-          (status) ? "Approved" : "Not Approved",
+          status,
           style: TextStyle(
-            color: (status) ? const Color.fromARGB(255, 0, 255, 8) : Colors.red,
+            color: (status == "approved")
+                ? const Color.fromARGB(255, 0, 255, 8)
+                : status == "rejected"
+                    ? Colors.red
+                    : Colors.yellowAccent,
             fontSize: 16,
           ),
         ),

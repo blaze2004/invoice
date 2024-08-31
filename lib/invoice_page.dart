@@ -164,13 +164,6 @@ class _InvoicePageState extends State<InvoicePage> {
     });
   }
 
-  Future<void> _logOut() async {
-    await supabase.auth.signOut();
-    setState(() {
-      session = supabase.auth.currentSession;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -208,18 +201,6 @@ class _InvoicePageState extends State<InvoicePage> {
             },
             icon: const Icon(Icons.add),
           ),
-          // IconButton(
-          //   onPressed: () {
-          //     if (session == null) {
-          //       Navigator.of(context).pushNamed("/login");
-          //     } else {
-          //       _logOut();
-          //     }
-          //   },
-          //   icon: session == null
-          //       ? const Icon(Icons.login)
-          //       : const Icon(Icons.logout),
-          // )
         ],
       ),
       body: Builder(
