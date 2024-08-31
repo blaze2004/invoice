@@ -17,7 +17,7 @@ class InvoicePdf {
     String formatCurrency(double amount) {
       return amount.toStringAsFixed(2);
     }
-
+      
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {

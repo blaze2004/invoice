@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:invoice/invoice_page.dart';
+import 'package:invoice/screens/dashBoard.dart';
 import 'package:invoice/splash_page.dart';
 import 'package:invoice/views/auth/signin.dart';
 import 'package:invoice/views/auth/signup.dart';
@@ -34,13 +35,14 @@ class InvoiceApp extends StatelessWidget {
         colorScheme: const ShadBlueColorScheme.light(),
         brightness: Brightness.light,
       ),
-      initialRoute: "/",
-      routes: <String, WidgetBuilder>{
-        '/': (_) => const SplashPage(),
-        '/invoice': (_) => const InvoicePage(),
-        '/login': (_) => const SignInPage(),
-        '/signup': (_) => const SignUpPage(),
-      },
+      home: const Dashboard(),
+      // initialRoute: "/",
+      // routes: <String, WidgetBuilder>{
+      //   '/': (_) => const SplashPage(),
+      //   '/invoice': (_) => const InvoicePage(),
+      //   '/login': (_) => const SignInPage(),
+      //   '/signup': (_) => const SignUpPage(),
+      // },
       debugShowCheckedModeBanner: false,
     );
   }

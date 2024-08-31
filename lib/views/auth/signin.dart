@@ -64,86 +64,89 @@ class _SignInPageState extends State<SignInPage> {
   Widget build(BuildContext context) {
     return AuthLayout(
       title: "Sign In",
-      child: ShadForm(
-        key: formKey,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 320),
-          child: Column(
-            children: [
-              ShadInputFormField(
-                id: 'email',
-                prefix: const Padding(
-                  padding: EdgeInsets.all(4.0),
-                  child: ShadImage.square(size: 16, LucideIcons.mail),
-                ),
-                placeholder: const Text('Email'),
-                validator: (v) {
-                  if (!EmailValidator.validate(v)) {
-                    return 'Invalid Email';
-                  }
-                  return null;
-                },
-                keyboardType: TextInputType.emailAddress,
-              ),
-              ShadInputFormField(
-                id: 'password',
-                placeholder: const Text('Password'),
-                validator: (v) {
-                  if (v.length < 8) {
-                    return 'Invalid Password';
-                  }
-                  return null;
-                },
-                obscureText: obscurePassword,
-                prefix: const Padding(
-                  padding: EdgeInsets.all(4.0),
-                  child: ShadImage.square(size: 16, LucideIcons.lock),
-                ),
-                suffix: ShadButton(
-                  width: 24,
-                  height: 24,
-                  padding: EdgeInsets.zero,
-                  decoration: const ShadDecoration(
-                    secondaryBorder: ShadBorder.none,
-                    secondaryFocusedBorder: ShadBorder.none,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: ShadForm(
+          key: formKey,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                ShadInputFormField(
+                  id: 'email',
+                  prefix: const Padding(
+                    padding: EdgeInsets.all(9),
+                    child: ShadImage.square(size: 20, LucideIcons.mail),
                   ),
-                  icon: ShadImage.square(
-                    size: 16,
-                    obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye,
-                  ),
-                  onPressed: () {
-                    setState(() => obscurePassword = !obscurePassword);
+                  placeholder: const Text('Email'),
+                  validator: (v) {
+                    if (!EmailValidator.validate(v)) {
+                      return 'Invalid Email';
+                    }
+                    return null;
                   },
+                  keyboardType: TextInputType.emailAddress,
                 ),
-              ),
-              ShadButton(
-                onPressed: signIn,
-                icon: isLoading
-                    ? const SizedBox.square(
-                        dimension: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
-                child: const Text('Sign In'),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Don\'t have an account?',
-                    style: ShadTheme.of(context).textTheme.muted,
+                const SizedBox(height: 14),
+                ShadInputFormField(
+                  id: 'password',
+                  placeholder: const Text('Password'),
+                  validator: (v) {
+                    if (v.length < 8) {
+                      return 'Invalid Password';
+                    }
+                    return null;
+                  },
+                  obscureText: obscurePassword,
+                  prefix: const Padding(
+                    padding: EdgeInsets.all(5),
+                    child: ShadImage.square(size: 20, LucideIcons.lock),
                   ),
-                  ShadButton.link(
-                    padding: const EdgeInsets.symmetric(horizontal: 0),
-                    child: const Text('Sign Up'),
+                  suffix: IconButton(
+                    icon: Icon(
+                      obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye,
+                      size: 20,
+                    ),
                     onPressed: () {
-                      Navigator.of(context).pushReplacementNamed('/signup');
+                      setState(() => obscurePassword = !obscurePassword);
                     },
-                  )
-                ],
-              )
-            ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ShadButton(
+                    onPressed: signIn,
+                    icon: isLoading
+                        ? const SizedBox.square(
+                            dimension: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : null,
+                    child: const Text('Sign In'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Don\'t have an account?',
+                      style: ShadTheme.of(context).textTheme.muted,
+                    ),
+                    ShadButton.link(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: const Text('Sign Up'),
+                      onPressed: () {
+                        Navigator.of(context).pushReplacementNamed('/signup');
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
