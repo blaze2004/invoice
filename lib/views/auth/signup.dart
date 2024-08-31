@@ -96,13 +96,13 @@ class _SignUpPageState extends State<SignUpPage> {
   try {
     final response = await supabase
         .from('organizations')
-        .select('organization_id')
-        .eq('organization_id', organizationId)
+        .select('slug')
+        .eq('slug', organizationId)
         .maybeSingle();
 
     return response != null;
   } catch (e) {
-    print('Error checking organization ID: $e');
+    print('Error checking organization code: $e');
     return false;
   }
 }
