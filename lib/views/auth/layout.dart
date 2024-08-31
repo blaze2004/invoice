@@ -33,7 +33,8 @@ class _AuthLayoutState extends State<AuthLayout> {
       if (session != null) {
         _redirecting = true;
         if (mounted) {
-          Navigator.of(context).pushNamed('/dashboard');
+          Navigator.of(context).pushReplacementNamed('/dashboard');
+          _redirecting = false;
         }
       }
     });
