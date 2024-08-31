@@ -37,7 +37,9 @@ class _Dashboard extends State<Dashboard> {
   String getName() {
     String name = (session?.user.userMetadata?['full_name'].toString() ?? "")
         .split(" ")[0];
-    return name[0].toUpperCase() + name.substring(1);
+    return name.length > 1
+        ? name[0].toUpperCase() + name.substring(1)
+        : name.toUpperCase();
   }
 
   Future<void> _logOut() async {
