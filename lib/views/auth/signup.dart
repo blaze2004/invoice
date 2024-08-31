@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:invoice/constants/constants.dart';
+import 'package:invoice/main.dart';
 import 'package:invoice/views/auth/layout.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,7 +13,7 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final supabase = Supabase.instance.client; // Make sure this is initialized
+
   final formKey = GlobalKey<ShadFormState>();
 
   bool isLoading = false;
@@ -94,7 +95,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<bool> isOrganizationIdPresent(String organizationId) async {
   try {
     final response = await supabase
-        .from('organization')
+        .from('organizations')
         .select('organization_id')
         .eq('organization_id', organizationId)
         .maybeSingle();
