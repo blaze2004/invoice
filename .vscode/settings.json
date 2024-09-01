@@ -1,3 +1,11 @@
 {
-    "cmake.ignoreCMakeListsMissing": true
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "cmake.ignoreCMakeListsMissing": true,
+  "deno.enablePaths": [
+    "supabase/functions"
+  ],
+  "deno.lint": true,
+  "deno.unstable": true
 }

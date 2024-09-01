@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:invoice/invoice_page.dart';
 import 'package:invoice/splash_page.dart';
+import 'package:invoice/views/auth/onboarding.dart';
 import 'package:invoice/views/auth/signin.dart';
 import 'package:invoice/views/auth/signup.dart';
 import 'package:invoice/views/dashboard/main.dart';
+import 'package:invoice/views/templates/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -11,7 +14,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 Future<void> main() async {
   usePathUrlStrategy();
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: ".env", mergeWith: Platform.environment);
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
@@ -41,7 +44,9 @@ class InvoiceApp extends StatelessWidget {
         '/invoice': (_) => const InvoicePage(),
         '/login': (_) => const SignInPage(),
         '/signup': (_) => const SignUpPage(),
+        '/onboarding': (_) => const UserOnbaordingPage(),
         '/dashboard': (_) => const Dashboard(),
+        '/templates': (_) => const InvoiceTemplatesListPage(),
       },
       debugShowCheckedModeBanner: false,
     );

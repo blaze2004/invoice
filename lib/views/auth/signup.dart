@@ -1,8 +1,5 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:invoice/constants/constants.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/views/auth/layout.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -29,106 +26,50 @@ class _SignUpPageState extends State<SignUpPage> {
 
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-      if ((formKey.currentState!.value['organization_name'] != null &&
-              formKey.currentState!.value['organization_name'] != "") ||
-          (formKey.currentState!.value['organization_code'] != null &&
-              formKey.currentState!.value['organization_code'] != "")) {
-        try {
-          String? organizationId;
-          if (formKey.currentState!.value['organization_code'] != null &&
-              formKey.currentState!.value['organization_code'] != "") {
-            organizationId = await isOrganizationIdPresent(
-                formKey.currentState!.value['organization_code']);
+      try {
+        final AuthResponse res = await supabase.auth.signUp(
+          email: formKey.currentState!.value['email'],
+          password: formKey.currentState!.value['password'],
+          emailRedirectTo:
+              kIsWeb ? null : 'io.supabase.invoice://login-callback',
+          data: {
+            'full_name': formKey.currentState!.value['full_name'],
+          },
+        );
 
-            if (organizationId == null) {
-              if (mounted) {
-                ShadToaster.of(context).show(
-                  const ShadToast.destructive(
-                    title: Text('Invalid organization code'),
-                    description: Text('Wrong code'),
-                  ),
-                );
-                setState(() {
-                  isLoading = false;
-                });
-              }
-              return;
-            }
-          }
-
-          final AuthResponse res = await supabase.auth.signUp(
-            email: formKey.currentState!.value['email'],
-            password: formKey.currentState!.value['password'],
-            emailRedirectTo:
-                kIsWeb ? null : 'io.supabase.invoice://login-callback/',
-            data: {
-              'full_name': formKey.currentState!.value['full_name'],
-              'organization_name':
-                  formKey.currentState!.value['organization_name'],
-              'organization_id': organizationId ?? '',
-            },
-          );
-
-          if (res.user != null) {
-            if (mounted) {
-              ShadToaster.of(context).show(
-                const ShadToast(
-                  title: Text('Please verify your email.'),
-                  description:
-                      Text('Check your email for a verification link.'),
-                ),
-              );
-            }
-          } else {
-            if (mounted) {
-              ShadToaster.of(context).show(
-                const ShadToast.destructive(
-                  title: Text('Sign up failed'),
-                  description: Text('Please try again.'),
-                ),
-              );
-            }
-          }
-        } on AuthException catch (e) {
+        if (res.user != null) {
           if (mounted) {
             ShadToaster.of(context).show(
-              ShadToast.destructive(
-                title: const Text("Sign up failed"),
-                description: Text(e.message),
+              const ShadToast(
+                title: Text('Please verify your email.'),
+                description: Text('Check your email for a verification link.'),
               ),
             );
           }
-        } finally {
-          setState(() {
-            isLoading = false;
-          });
+        } else {
+          if (mounted) {
+            ShadToaster.of(context).show(
+              const ShadToast.destructive(
+                title: Text('Sign up failed'),
+                description: Text('Please try again.'),
+              ),
+            );
+          }
         }
-      } else {
-        ShadToaster.of(context).show(
-          const ShadToast.destructive(
-            title: Text('Organization name or code is required'),
-            description: Text('Please enter organization name or code.'),
-          ),
-        );
+      } on AuthException catch (e) {
+        if (mounted) {
+          ShadToaster.of(context).show(
+            ShadToast.destructive(
+              title: const Text("Sign up failed"),
+              description: Text(e.message),
+            ),
+          );
+        }
+      } finally {
         setState(() {
           isLoading = false;
         });
       }
-    }
-  }
-
-  Future<String?> isOrganizationIdPresent(String organizationId) async {
-    try {
-      final response = await supabase
-          .from('organizations')
-          .select('slug, organization_id')
-          .eq('slug', organizationId)
-          .maybeSingle();
-
-      return response?['organization_id'];
-    } catch (e) {
-      log('Error checking organization code: $e');
-      return null;
     }
   }
 
@@ -236,48 +177,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         () => obscureConfirmPassword = !obscureConfirmPassword);
                   },
                 ),
-              ),
-              ShadInputFormField(
-                id: 'organization_name',
-                prefix: const Padding(
-                  padding: EdgeInsets.all(4.0),
-                  child: ShadImage.square(size: 16, LucideIcons.building),
-                ),
-                placeholder: const Text('Organization Name'),
-                keyboardType: TextInputType.text,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Expanded(
-                    child: Divider(
-                      thickness: 1,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: defaultPadding / 2),
-                    child: Text(
-                      "Or",
-                      style: ShadTheme.of(context).textTheme.muted,
-                    ),
-                  ),
-                  const Expanded(
-                    child: Divider(
-                      thickness: 1,
-                    ),
-                  ),
-                ],
-              ),
-              ShadInputFormField(
-                id: 'organization_code',
-                prefix: const Padding(
-                  padding: EdgeInsets.all(4.0),
-                  child: ShadImage.square(size: 16, LucideIcons.building),
-                ),
-                placeholder: const Text('Organization Code'),
-                keyboardType: TextInputType.text,
               ),
               ShadButton(
                 onPressed: signUp,
