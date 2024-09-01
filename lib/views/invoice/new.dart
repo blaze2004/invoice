@@ -232,7 +232,6 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: ShadInputFormField(
-                    id: 'item_description',
                     initialValue: item.description,
                     placeholder: const Text('Description'),
                     validator: (v) {
@@ -251,7 +250,6 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: ShadInputFormField(
-                    id: 'item_amount',
                     initialValue: item.amount.toString(),
                     placeholder: const Text('Amount'),
                     keyboardType: TextInputType.number,
@@ -262,8 +260,13 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
                       return null;
                     },
                     onChanged: (v) {
+                      if (v.isEmpty) return;
                       setState(() {
-                        item.amount = double.parse(v);
+                        try{
+                          item.amount = double.parse(v);
+                        }catch(e){
+                          item.amount = int.parse(v).toDouble();
+                        }
                       });
                     },
                   ),
@@ -272,7 +275,6 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: ShadInputFormField(
-                      id: 'item_quantity',
                       initialValue: item.quantity.toString(),
                       placeholder: const Text('Quantity'),
                       keyboardType: TextInputType.number,
