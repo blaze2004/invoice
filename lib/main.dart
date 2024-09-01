@@ -6,6 +6,7 @@ import 'package:invoice/views/auth/onboarding.dart';
 import 'package:invoice/views/auth/signin.dart';
 import 'package:invoice/views/auth/signup.dart';
 import 'package:invoice/views/dashboard/main.dart';
+import 'package:invoice/views/invoice/new.dart';
 import 'package:invoice/views/templates/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -47,6 +48,7 @@ class InvoiceApp extends StatelessWidget {
         '/onboarding': (_) => const UserOnbaordingPage(),
         '/dashboard': (_) => const Dashboard(),
         '/templates': (_) => const InvoiceTemplatesListPage(),
+        '/new-invoice': (_) => const NewInvoicePage(),
       },
       debugShowCheckedModeBanner: false,
     );

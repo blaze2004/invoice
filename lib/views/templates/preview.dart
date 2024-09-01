@@ -11,7 +11,7 @@ class InvoiceTemplatePreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).pushNamed('/invoice', arguments: template);
+        Navigator.of(context).pushNamed('/new-invoice', arguments: template);
       },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),

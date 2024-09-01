@@ -1,5 +1,5 @@
 class InvoiceHeader {
-  final String title;
+  String title;
   late final String logo;
   final List<InvoiceHeaderDetail> details;
 
@@ -38,7 +38,7 @@ class InvoiceHeader {
 
 class InvoiceHeaderDetail {
   final String label;
-  final String value;
+  String value;
 
   InvoiceHeaderDetail({required this.label, required this.value});
 
@@ -108,7 +108,7 @@ enum InvoiceSectionFieldType { text, number, date, currency }
 
 class InvoiceSectionField {
   final String label;
-  final String value;
+  String value;
   final bool editable;
   final InvoiceSectionFieldType type;
 
@@ -142,9 +142,9 @@ class InvoiceSectionField {
 }
 
 class InvoiceSectionItem {
-  final String description;
-  final double amount;
-  final int quantity;
+  String description;
+  double amount;
+  int quantity;
 
   InvoiceSectionItem({
     required this.description,
@@ -170,13 +170,15 @@ class InvoiceSectionItem {
 }
 
 class InvoiceTemplate {
+  final int id;
   final String name;
   final String description;
   final InvoiceHeader header;
   final List<InvoiceSection> sections;
-  final String footer;
+  String footer;
 
   InvoiceTemplate({
+    required this.id,
     required this.name,
     required this.description,
     required this.header,
@@ -186,6 +188,7 @@ class InvoiceTemplate {
 
   factory InvoiceTemplate.fromJson(Map<String, dynamic> json) {
     return InvoiceTemplate(
+      id: json['id'] as int,
       name: json['name'] as String,
       description: json['description'] as String,
       header: InvoiceHeader.fromJson(json['header'] as Map<String, dynamic>),
@@ -199,6 +202,7 @@ class InvoiceTemplate {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'description': description,
       'header': header.toJson(),
