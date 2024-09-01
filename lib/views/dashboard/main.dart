@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/views/dashboard/view_invoice.dart';
+import 'package:invoice/views/drafts_screen.dart';
+import 'package:invoice/views/inbox_screen.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -130,101 +132,7 @@ class _Dashboard extends State<Dashboard> {
           });
         },
       ),
-      body: (items.isEmpty)
-          ? const Center(
-              child: Text(
-                "No Invoice Found!",
-                style: TextStyle(fontSize: 30),
-              ),
-            )
-          : ListView.builder(
-              // physics: const BouncingScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: items.length,
-              itemBuilder: (ctx, index) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return const InvoiceActionsView();
-                    }));
-                  }, //Tap to see Each invoice details
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        titlePart(items[index].filename,
-                            items[index].invoiceNumber.toString()),
-                        trailingPart(
-                            items[index].totalAmount, items[index].state),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-    );
-  }
-
-  Widget titlePart(String name, String invoiceId) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const CircleAvatar(
-          radius: 25,
-          backgroundColor: Colors.white,
-          child: Icon(
-            LucideIcons.file,
-            size: 30,
-            color: Colors.black,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              name,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              invoiceId,
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-          ],
-        )
-      ],
-    );
-  }
-
-  Widget trailingPart(double amount, String status) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          "\$$amount",
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          status,
-          style: TextStyle(
-            color: (status == "approved")
-                ? const Color.fromARGB(255, 0, 255, 8)
-                : status == "rejected"
-                    ? Colors.red
-                    : Colors.yellowAccent,
-            fontSize: 16,
-          ),
-        ),
-      ],
+      body: (currIndex==0)?InboxScreen(items: items):  DraftScreen(items: items,)
     );
   }
 }
