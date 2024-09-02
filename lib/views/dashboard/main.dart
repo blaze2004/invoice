@@ -94,11 +94,6 @@ class _Dashboard extends State<Dashboard> {
 
   @override
   Widget build(context) {
-    int? pageIndex = (ModalRoute.of(context)?.settings.arguments) as int?;
-    if (pageIndex != null) {
-      currIndex = pageIndex;
-    }
-
     List<Invoice> items = (currIndex == 0) ? _inboxItems : _draftItems;
     return Scaffold(
       backgroundColor: ShadTheme.of(context).colorScheme.background,

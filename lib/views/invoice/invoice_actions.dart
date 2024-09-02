@@ -46,17 +46,19 @@ class InvoiceActionsMenu extends StatelessWidget {
       invoiceFormKey.currentState!.save();
       try {
         Map<String, dynamic> data = invoice.toJson();
-        if (data['id'] == null) {
-          data.remove('id');
+        data.remove('id');
+        if (invoice.id == null) {
+          await supabase.from("invoices").insert(data);
+        } else {
+          await supabase.from("invoices").update(data).eq('id', invoice.id!);
         }
-        await supabase.from("invoices").upsert(data);
 
         ShadToaster.of(context).show(
           const ShadToast(
             title: Text('Invoice saved successfully.'),
           ),
         );
-        Navigator.of(context).pushReplacementNamed('/dashboard', arguments: 1);
+        Navigator.of(context).pushReplacementNamed('/dashboard');
       } catch (e) {
         log(e.toString());
         ShadToaster.of(context).show(
