@@ -1,7 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:invoice/constants/constants.dart';
+import 'package:invoice/main.dart';
+import 'package:invoice/models/invoice.dart';
 import 'package:invoice/models/template.dart';
+import 'package:invoice/views/invoice/save_invoice.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 class NewInvoicePage extends StatefulWidget {
@@ -14,6 +19,71 @@ class NewInvoicePage extends StatefulWidget {
 class _NewInvoicePageState extends State<NewInvoicePage> {
   final formKey = GlobalKey<ShadFormState>();
 
+  // void saveInvoice(InvoiceTemplate template) async {
+  //   if (formKey.currentState!.validate()) {
+  //     formKey.currentState!.save();
+  //     try {
+  //       Invoice invoice = Invoice(
+  //         name: template.header.title,
+  //         description: template.description,
+  //         header: template.header,
+  //         sections: template.sections,
+  //         footer: template.footer,
+  //         templateId: template.id,
+  //         createdBy: supabase.auth.currentUser!.id,
+  //         status: InvoiceStatus.draft,
+  //         invoiceNumber: "",
+  //         issueDate: DateTime.now(),
+  //         dueDate: DateTime.now().add(const Duration(days: 30)),
+  //         totalAmount: 0.0,
+  //       );
+  //       await supabase.from("invoices").insert(invoice.toJson());
+  //       if (mounted) {
+  //         ShadToaster.of(context).show(
+  //           const ShadToast(
+  //             title: Text('Success'),
+  //             description: Text('Invoice saved successfully.'),
+  //           ),
+  //         );
+  //       }
+  //     } catch (e) {
+  //       if (mounted) {
+  //         ShadToaster.of(context).show(
+  //           const ShadToast.destructive(
+  //             title: Text('Error'),
+  //             description: Text('Error saving to cloud.'),
+  //           ),
+  //         );
+  //       }
+  //     }
+  //     // Save the invoice
+  //     // Navigator.of(context).pop();
+  //   }
+  // }
+
+  void showMoreOptionsPopup(BuildContext context, InvoiceTemplate template) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: InvoiceSaveMenu(
+              invoice: Invoice(
+                  name: template.header.title,
+                  description: template.description,
+                  header: template.header,
+                  sections: template.sections,
+                  footer: template.footer,
+                  invoiceNumber: "",
+                  issueDate: DateTime.now(),
+                  dueDate:DateTime.now(),
+                  templateId: template.id,
+                  status: InvoiceStatus.draft,
+                  createdBy: supabase.auth.currentUser!.id,),
+            ),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     InvoiceTemplate template =
@@ -24,6 +94,9 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
           template.name,
           overflow: TextOverflow.ellipsis,
         ),
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -161,27 +234,63 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
             field.editable
                 ? ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 320),
-                    child: ShadInputFormField(
-                      id: 'field_${field.label}',
-                      initialValue: field.value,
-                      placeholder: Text(field.label),
-                      keyboardType: field.type == InvoiceSectionFieldType.number
-                          ? TextInputType.number
-                          : (field.type == InvoiceSectionFieldType.date
-                              ? TextInputType.datetime
-                              : TextInputType.text),
-                      validator: (v) {
-                        if (v.isEmpty) {
-                          return 'This field is required.';
-                        }
-                        return null;
-                      },
-                      onChanged: (v) {
-                        setState(() {
-                          field.value = v.toString();
-                        });
-                      },
-                    ),
+                    child: field.type == InvoiceSectionFieldType.date
+                        ? InkWell(
+                            onTap: () {
+                              showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2100),
+                              ).then((value) {
+                                log('Date selected: $value');
+                                if (value != null) {
+                                  setState(() {
+                                    field.value =
+                                        DateFormat('yyyy-MM-dd').format(value);
+                                  });
+                                }
+                              });
+                            },
+                            child: IgnorePointer(
+                              child: ShadInputFormField(
+                                id: 'field_${field.label}',
+                                initialValue: field.value,
+                                placeholder: Text(field.label),
+                                validator: (v) {
+                                  if (v.isEmpty) {
+                                    return 'This field is required.';
+                                  }
+                                  return null;
+                                },
+                                onChanged: (v) {
+                                  setState(() {
+                                    field.value = v.toString();
+                                  });
+                                },
+                              ),
+                            ),
+                          )
+                        : ShadInputFormField(
+                            id: 'field_${field.label}',
+                            initialValue: field.value,
+                            placeholder: Text(field.label),
+                            keyboardType:
+                                field.type == InvoiceSectionFieldType.number
+                                    ? TextInputType.number
+                                    : TextInputType.text,
+                            validator: (v) {
+                              if (v.isEmpty) {
+                                return 'This field is required.';
+                              }
+                              return null;
+                            },
+                            onChanged: (v) {
+                              setState(() {
+                                field.value = v.toString();
+                              });
+                            },
+                          ),
                   )
                 : Text(
                     field.value,
@@ -262,9 +371,9 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
                     onChanged: (v) {
                       if (v.isEmpty) return;
                       setState(() {
-                        try{
+                        try {
                           item.amount = double.parse(v);
-                        }catch(e){
+                        } catch (e) {
                           item.amount = int.parse(v).toDouble();
                         }
                       });

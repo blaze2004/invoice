@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:invoice/invoice_page.dart';
 import 'package:invoice/splash_page.dart';
 import 'package:invoice/views/auth/onboarding.dart';
 import 'package:invoice/views/auth/signin.dart';
@@ -42,7 +41,7 @@ class InvoiceApp extends StatelessWidget {
       initialRoute: "/",
       routes: <String, WidgetBuilder>{
         '/': (_) => const SplashPage(),
-        '/invoice': (_) => const InvoicePage(),
+        // '/invoice': (_) => const InvoicePage(),
         '/login': (_) => const SignInPage(),
         '/signup': (_) => const SignUpPage(),
         '/onboarding': (_) => const UserOnbaordingPage(),

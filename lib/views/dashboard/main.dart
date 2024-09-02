@@ -67,10 +67,12 @@ class _Dashboard extends State<Dashboard> {
     List<Invoice> draftItems = [];
 
     for (var element in invoices) {
-      if (element['state'] == 'draft') {
-        draftItems.add(Invoice.fromJson(element, isDB: true));
+      if (element['status'] == 'Draft') {
+        if (element['created_by'] == session!.user.id) {
+          draftItems.add(Invoice.fromJson(element));
+        }
       } else {
-        inboxItems.add(Invoice.fromJson(element, isDB: true));
+        inboxItems.add(Invoice.fromJson(element));
       }
     }
     setState(() {
@@ -103,7 +105,6 @@ class _Dashboard extends State<Dashboard> {
   @override
   Widget build(context) {
     List<Invoice> items = (currIndex == 0) ? _inboxItems : _draftItems;
-    log("Currintex: $currIndex");
     return Scaffold(
       backgroundColor: ShadTheme.of(context).colorScheme.background,
       appBar: AppBar(
@@ -131,7 +132,7 @@ class _Dashboard extends State<Dashboard> {
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(LucideIcons.inbox), label: "Invoice"),
+              icon: Icon(LucideIcons.inbox), label: "Inbox"),
           BottomNavigationBarItem(
               icon: Icon(LucideIcons.fileUp), label: "Drafts"),
         ],
@@ -168,10 +169,9 @@ class _Dashboard extends State<Dashboard> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        titlePart(items[index].filename,
+                        titlePart(items[index].name,
                             items[index].invoiceNumber.toString()),
-                        trailingPart(
-                            items[index].totalAmount, items[index].state),
+                        trailingPart(items[index].status),
                       ],
                     ),
                   ),
@@ -181,7 +181,7 @@ class _Dashboard extends State<Dashboard> {
     );
   }
 
-  Widget titlePart(String name, String invoiceId) {
+  Widget titlePart(String name, String invoiceNumber) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -207,7 +207,7 @@ class _Dashboard extends State<Dashboard> {
             ),
             const SizedBox(height: 4),
             Text(
-              invoiceId,
+              invoiceNumber,
               style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
@@ -216,24 +216,26 @@ class _Dashboard extends State<Dashboard> {
     );
   }
 
-  Widget trailingPart(double amount, String status) {
+  Widget trailingPart(InvoiceStatus status) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          "\$$amount",
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          status,
+          invoiceStateMap.keys.firstWhere(
+            (k) => invoiceStateMap[k] == status,
+            orElse: () => 'Draft',
+          ),
           style: TextStyle(
-            color: (status == "approved")
-                ? const Color.fromARGB(255, 0, 255, 8)
-                : status == "rejected"
-                    ? Colors.red
-                    : Colors.yellowAccent,
+            color: status == InvoiceStatus.paid
+                ? Colors.green
+                : status == InvoiceStatus.draft
+                    ? Colors.grey
+                    : status == InvoiceStatus.inReview
+                        ? Colors.orange
+                        : status == InvoiceStatus.sent
+                            ? Colors.blue
+                            : Colors.red,
             fontSize: 16,
           ),
         ),

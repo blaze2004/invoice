@@ -24,14 +24,15 @@ CREATE TABLE invoices (
     id serial PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
+    header JSON NOT NULL,
+    sections JSON NOT NULL,
+    footer Text,
     invoice_number TEXT NOT NULL,
-    client Json NOT NULL,
     issue_date DATE,
     due_date DATE,
-    total_amount NUMERIC(10,2) NOT NULL,
-    template_id int NOT NULL REFERENCES invoice_templates,
-    template_fields JSON NOT NULL,
+    client Json NOT NULL,
     status invoice_status NOT NULL DEFAULT 'Draft',
+    template_id int NOT NULL REFERENCES invoice_templates,
     created_by uuid REFERENCES profiles ON DELETE CASCADE DEFAULT (auth.uid()),
     organization_id int NOT NULL REFERENCES organizations ON DELETE CASCADE
 );
@@ -73,14 +74,22 @@ CREATE POLICY "Users can update their invoice templates." ON invoice_templates
 
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Org members can view org invoices." ON invoices
+CREATE POLICY "Users can view their invoices." ON invoices
+    FOR SELECT TO authenticated
+        USING (
+            created_by = auth.uid()
+        );
+
+CREATE POLICY "Org admins can view org invoices." ON invoices
     FOR SELECT TO authenticated
         USING (
             organization_id IN (
             SELECT
                 organization_id
             FROM
-                user_organizations)
+                user_organizations
+            WHERE
+                ROLE = 'Admin')
         );
 
 CREATE POLICY "Org members can create invoices." ON invoices
