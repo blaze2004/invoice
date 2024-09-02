@@ -22,38 +22,10 @@ class Dashboard extends StatefulWidget {
 class _Dashboard extends State<Dashboard> {
   Session? session = supabase.auth.currentSession;
 
-  final List<Organization> _organizations = [];
-
   List<Invoice> _inboxItems = [];
   List<Invoice> _draftItems = [];
 
   int currIndex = 0;
-
-  Future<void> getOrganizations() async {
-    final data = await supabase
-        .from("user_organizations")
-        .select("role, organizations(id, name)");
-    if (data.isEmpty) {
-      if (mounted) {
-        Navigator.of(context).restorablePushNamed('/onboarding');
-      }
-    } else {
-      List<Organization> organizations = [];
-      for (var element in data) {
-        organizations.add(Organization.fromJson(element));
-      }
-
-      setState(() {
-        _organizations.clear();
-        _organizations.addAll(organizations);
-      });
-
-      if (mounted) {
-        Provider.of<OrganizationProvider>(context, listen: false)
-            .selectOrganization(organizations[0]);
-      }
-    }
-  }
 
   Future<void> getInvoices() async {
     List<Map<String, dynamic>> invoices = [];
@@ -98,7 +70,8 @@ class _Dashboard extends State<Dashboard> {
   }
 
   void initializeOrg() async {
-    await getOrganizations();
+    await Provider.of<OrganizationProvider>(context, listen: false)
+        .getOrganizations();
     await getInvoices();
   }
 
@@ -173,7 +146,6 @@ class _Dashboard extends State<Dashboard> {
           ? OrgMembersPage(
               userRole: organization.userRole,
               organizationId: organization.id,
-              getOrganizations: getOrganizations,
             )
           : (items.isEmpty)
               ? const Center(
@@ -231,11 +203,18 @@ class _Dashboard extends State<Dashboard> {
   }
 
   Widget organizationSelector(int organizationId) {
+    List<Organization> organizations =
+        Provider.of<OrganizationProvider>(context).organizations;
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: 180),
       child: ShadSelect<int>(
         placeholder: const Text('Select Organization'),
         initialValue: organizationId,
+        onChanged: (value) {
+          Provider.of<OrganizationProvider>(context, listen: false)
+              .selectOrganization(organizations.firstWhere((e) => e.id == value));
+          getInvoices();
+        },
         options: [
           Padding(
             padding: const EdgeInsets.fromLTRB(32, 6, 6, 6),
@@ -248,11 +227,11 @@ class _Dashboard extends State<Dashboard> {
               textAlign: TextAlign.start,
             ),
           ),
-          ..._organizations
+          ...organizations
               .map((e) => ShadOption(value: e.id, child: Text(e.name))),
         ],
         selectedOptionBuilder: (context, value) => Text(
-            _organizations.firstWhere((element) => element.id == value).name),
+            organizations.firstWhere((element) => element.id == value).name),
       ),
     );
   }

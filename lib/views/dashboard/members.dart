@@ -3,16 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:invoice/constants/constants.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/member.dart';
+import 'package:invoice/proivder/organization.dart';
+import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OrgMembersPage extends StatefulWidget {
   const OrgMembersPage(
-      {super.key, required this.organizationId, required this.userRole, required this.getOrganizations});
+      {super.key, required this.organizationId, required this.userRole});
 
   final int organizationId;
   final String userRole;
-  final Future<void> Function() getOrganizations;
 
   @override
   State<OrgMembersPage> createState() => _OrgMembersPageState();
@@ -35,8 +36,8 @@ class _OrgMembersPageState extends State<OrgMembersPage> {
         'user_id': supabase.auth.currentUser!.id,
       });
 
-      widget.getOrganizations();
       if (mounted) {
+        Provider.of<OrganizationProvider>(context, listen: false).getOrganizations();
         ShadToaster.of(context).show(
           const ShadToast(
             title: Text('Success'),
