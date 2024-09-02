@@ -58,6 +58,11 @@ class _AdminInvoiceActionsPage extends State<AdminInvoiceActionsPage> {
 
   @override
   Widget build(context) {
+    if (widget.invoice.dueDate.isBefore(DateTime.now()) &&
+        widget.invoice.status == InvoiceStatus.sent) {
+      widget.invoice.status = InvoiceStatus.overDue;
+      updateStatus(widget.invoice.id!, 'Overdue');
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(

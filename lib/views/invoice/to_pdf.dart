@@ -1,9 +1,11 @@
+import 'dart:html' as html;
+import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter_mailer/flutter_mailer.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/models/template.dart';
+import 'package:open_file_plus/open_file_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
@@ -202,32 +204,27 @@ class InvoicePdf {
     return pw.Text(invoice.footer);
   }
 
-  Future<String> savePdf() async {
+  Future<void> savePdf() async {
+    if (kIsWeb) {
+      return _savePdfWeb();
+    } else {
+      return _savePdfMobile();
+    }
+  }
+
+  Future<void> _savePdfWeb() async {
+    final pdfBytes = await generatePdf();
+    final base64Data = base64Encode(pdfBytes);
+    final blob = html.Blob([base64Data], 'application/pdf');
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    html.Url.revokeObjectUrl(url);
+  }
+
+  Future<void> _savePdfMobile() async {
     final pdfBytes = await generatePdf();
     final directory = await getApplicationDocumentsDirectory();
     final pdfFile = File('${directory.path}/${invoice.name}.pdf');
     await pdfFile.writeAsBytes(pdfBytes.buffer.asUint8List());
-    return pdfFile.path;
-  }
-
-  Future<String> sendEmailWithPDF(String recipientEmail) async {
-    final String pdfPath = await savePdf();
-
-    final MailOptions email = MailOptions(
-      body: 'Invoice attached.',
-      subject: 'Invoice',
-      recipients: [
-        recipientEmail,
-      ],
-      attachments: [pdfPath],
-      isHTML: false,
-    );
-
-    try {
-      await FlutterMailer.send(email);
-      return "Email sent successfully.";
-    } catch (error) {
-      return error.toString();
-    }
+    OpenFile.open(pdfFile.path);
   }
 }

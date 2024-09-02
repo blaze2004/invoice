@@ -54,7 +54,7 @@ class Invoice {
   final DateTime issueDate;
   final DateTime dueDate;
   final int templateId;
-  final InvoiceStatus status;
+  InvoiceStatus status;
   final String createdBy;
   final int organizationId;
   final InvoiceClient client;

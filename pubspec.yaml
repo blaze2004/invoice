@@ -42,7 +42,6 @@ dependencies:
   pdf: ^3.11.1
   path_provider: ^2.1.4
   open_file_plus: ^3.4.1+1
-  flutter_mailer: ^2.1.2
   shadcn_ui: ^0.8.1
   email_validator: ^3.0.0
 

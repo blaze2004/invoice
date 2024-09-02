@@ -211,14 +211,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_mailer:
-    dependency: "direct main"
-    description:
-      name: flutter_mailer
-      sha256: "4fffaa35e911ff5ec2e5a4ebbca62c372e99a154eb3bb2c0bf79f09adf6ecf4c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.2"
   flutter_shaders:
     dependency: transitive
     description:
@@ -790,10 +782,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: "5c5f338a667b4c644744b661f309fb8080bb94b18a7e91ef1dbd343bed00ed6d"
+      sha256: f652077d0bdf60abe4c1f6377448e8655008eef28f128bc023f7b5e8dfeb48fc
       url: "https://pub.dev"
     source: hosted
-    version: "14.2.5"
+    version: "14.2.4"
   web:
     dependency: transitive
     description:
