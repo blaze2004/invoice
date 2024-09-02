@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:invoice/constants/constants.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/member.dart';
+import 'package:invoice/models/organization.dart';
 import 'package:invoice/proivder/organization.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -37,7 +38,8 @@ class _OrgMembersPageState extends State<OrgMembersPage> {
       });
 
       if (mounted) {
-        Provider.of<OrganizationProvider>(context, listen: false).getOrganizations();
+        Provider.of<OrganizationProvider>(context, listen: false)
+            .getOrganizations();
         ShadToaster.of(context).show(
           const ShadToast(
             title: Text('Success'),
@@ -84,10 +86,13 @@ class _OrgMembersPageState extends State<OrgMembersPage> {
 
   void getMembers() async {
     List<OrgMember> members = [];
+    Organization organization =
+        Provider.of<OrganizationProvider>(context, listen: false)
+            .selectedOrganization!;
     final data = await supabase
         .from("organization_members")
         .select("*, profiles(full_name)")
-        .eq("organization_id", widget.organizationId);
+        .eq("organization_id", organization.id);
 
     for (var element in data) {
       members.add(OrgMember.fromJson(element));
@@ -103,7 +108,7 @@ class _OrgMembersPageState extends State<OrgMembersPage> {
       final invitedData = await supabase
           .from("organization_invitations")
           .select("*")
-          .eq("organization_id", widget.organizationId);
+          .eq("organization_id", organization.id);
 
       for (var element in invitedData) {
         invitedMembers.add(InvitedMember.fromJson(element));
