@@ -3,6 +3,7 @@ import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/views/dashboard/view_invoice.dart';
 import 'package:invoice/views/invoice/invoice_form.dart';
+import 'package:invoice/views/templates/main.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -115,8 +116,8 @@ class _Dashboard extends State<Dashboard> {
           LucideIcons.plus,
           size: 30,
         ),
-        onPressed: () {
-          Navigator.of(context).pushNamed('/templates');
+        onPressed: () async{
+       Navigator.of(context).pushNamed('/templates');
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -132,6 +133,7 @@ class _Dashboard extends State<Dashboard> {
         onTap: (int index) {
           setState(() {
             currIndex = index;
+            getInvoices();
           });
         },
       ),
