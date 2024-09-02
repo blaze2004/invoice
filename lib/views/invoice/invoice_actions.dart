@@ -72,7 +72,7 @@ class InvoiceActionsMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 200,
-      height: 120,
+      height: 170,
       child: ListView(
         children: [
           ListTile(

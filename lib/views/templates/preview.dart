@@ -46,6 +46,10 @@ class InvoicePreview extends StatelessWidget {
         elevation: 4.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.secondary,
+            width: 2.0,
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),

@@ -1,12 +1,11 @@
-import 'package:universal_html/html.dart' as html;
-import 'dart:convert';
-import 'dart:io';
+import 'dart:developer';
+
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/models/template.dart';
 import 'package:open_file_plus/open_file_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 
@@ -158,22 +157,58 @@ class InvoicePdf {
                 children: [
                   pw.TableRow(
                     children: [
-                      pw.Text('Description'),
-                      pw.Text('Quantity'),
-                      pw.Text('Amount'),
-                      pw.Text('Total'),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Description',
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                            )),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Quantity',
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                            )),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Amount',
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                            )),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Total',
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                            )),
+                      ),
                     ],
                   ),
                   ...section.items!.map((item) {
                     final total = item.amount * item.quantity;
                     return pw.TableRow(
                       children: [
-                        pw.Text(item.description),
-                        pw.Text(item.quantity.toString()),
-                        pw.Text(
-                            '${format.currencySymbol}${item.amount.toStringAsFixed(2)}'),
-                        pw.Text(
-                            '${format.currencySymbol}${total.toStringAsFixed(2)}'),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(item.description),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(item.quantity.toString()),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(
+                              '${format.currencySymbol}${item.amount.toStringAsFixed(2)}'),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(
+                              '${format.currencySymbol}${total.toStringAsFixed(2)}'),
+                        ),
                       ],
                     );
                   }),
@@ -205,26 +240,13 @@ class InvoicePdf {
   }
 
   Future<void> savePdf() async {
-    if (kIsWeb) {
-      return _savePdfWeb();
-    } else {
-      return _savePdfMobile();
+    final pdfBytes = await generatePdf();
+
+    final path = await FileSaver.instance
+        .saveFile(name: '${invoice.name}.pdf', bytes: pdfBytes);
+
+    if (!kIsWeb) {
+      OpenFile.open(path);
     }
-  }
-
-  Future<void> _savePdfWeb() async {
-    final pdfBytes = await generatePdf();
-    final base64Data = base64Encode(pdfBytes);
-    final blob = html.Blob([base64Data], 'application/pdf');
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    html.Url.revokeObjectUrl(url);
-  }
-
-  Future<void> _savePdfMobile() async {
-    final pdfBytes = await generatePdf();
-    final directory = await getApplicationDocumentsDirectory();
-    final pdfFile = File('${directory.path}/${invoice.name}.pdf');
-    await pdfFile.writeAsBytes(pdfBytes.buffer.asUint8List());
-    OpenFile.open(pdfFile.path);
   }
 }

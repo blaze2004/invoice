@@ -44,7 +44,7 @@ dependencies:
   open_file_plus: ^3.4.1+1
   shadcn_ui: ^0.8.1
   email_validator: ^3.0.0
-  universal_html: ^2.2.4
+  file_saver: ^0.2.14
 
 dev_dependencies:
   flutter_test:

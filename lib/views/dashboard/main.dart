@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
+import 'package:invoice/views/dashboard/members.dart';
 import 'package:invoice/views/dashboard/view_invoice.dart';
 import 'package:invoice/views/invoice/invoice_form.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -18,6 +19,7 @@ class Dashboard extends StatefulWidget {
 class _Dashboard extends State<Dashboard> {
   Session? session = supabase.auth.currentSession;
   String userRole = 'Staff';
+  late int orgnizationId;
   List<Invoice> _inboxItems = [];
   List<Invoice> _draftItems = [];
 
@@ -34,7 +36,7 @@ class _Dashboard extends State<Dashboard> {
   Future<void> checkOrganization() async {
     final data = await supabase
         .from("user_organizations")
-        .select("role")
+        .select("role, organization_id")
         .limit(1)
         .maybeSingle();
     if (data == null) {
@@ -42,6 +44,7 @@ class _Dashboard extends State<Dashboard> {
         Navigator.of(context).restorablePushNamed('/onboarding');
       }
     } else {
+      orgnizationId = data['organization_id'];
       userRole = data['role'];
     }
   }
@@ -137,58 +140,63 @@ class _Dashboard extends State<Dashboard> {
           });
         },
       ),
-      body: (items.isEmpty)
-          ? const Center(
-              child: Text(
-                "No Invoice Found!",
-                style: TextStyle(fontSize: 30),
-              ),
+      body: (currIndex == 2)
+          ? OrgMembersPage(
+              userRole: userRole,
+              organizationId: orgnizationId,
             )
-          : RefreshIndicator(
-              onRefresh: () async {
-                getInvoices();
-              },
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: items.length,
-                itemBuilder: (ctx, index) {
-                  return InkWell(
-                    onTap: () {
-                      if (currIndex == 0) {
-                        if (userRole == 'Admin') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return AdminInvoiceActionsPage(
-                                invoice: items[index],
-                                userRole: userRole,
+          : (items.isEmpty)
+              ? const Center(
+                  child: Text(
+                    "No Invoice Found!",
+                    style: TextStyle(fontSize: 30),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    getInvoices();
+                  },
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: items.length,
+                    itemBuilder: (ctx, index) {
+                      return InkWell(
+                        onTap: () {
+                          if (currIndex == 0) {
+                            if (userRole == 'Admin') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return AdminInvoiceActionsPage(
+                                    invoice: items[index],
+                                    userRole: userRole,
+                                  );
+                                }),
                               );
-                            }),
-                          );
-                        }
-                      } else {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return InvoiceForm(invoice: items[index]);
-                        }));
-                      }
+                            }
+                          } else {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return InvoiceForm(invoice: items[index]);
+                            }));
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              titlePart(items[index].name,
+                                  items[index].invoiceNumber.toString()),
+                              trailingPart(items[index].status),
+                            ],
+                          ),
+                        ),
+                      );
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          titlePart(items[index].name,
-                              items[index].invoiceNumber.toString()),
-                          trailingPart(items[index].status),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+                  ),
+                ),
     );
   }
 
