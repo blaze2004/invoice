@@ -155,7 +155,9 @@ class _OrgMembersPageState extends State<OrgMembersPage> {
                       ),
                     ),
                     child: ListTile(
-                      leading: const Icon(Icons.person, color: Colors.teal),
+                      leading: Icon(Icons.person,
+                        color:
+                            member.role == "Admin" ? Colors.red : Colors.teal),
                       title: Text(
                         member.email,
                         overflow: TextOverflow.ellipsis,
@@ -193,7 +195,9 @@ class _OrgMembersPageState extends State<OrgMembersPage> {
                     ),
                   ),
                   child: ListTile(
-                    leading: const Icon(Icons.person, color: Colors.teal),
+                    leading: Icon(Icons.person,
+                        color:
+                            member.role == "Admin" ? Colors.red : Colors.teal),
                     title: Text(
                       member.name,
                       style: const TextStyle(fontWeight: FontWeight.bold),
