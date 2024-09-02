@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:invoice/splash_page.dart';
 import 'package:invoice/views/auth/onboarding.dart';
 import 'package:invoice/views/auth/signin.dart';
@@ -12,9 +13,20 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 Future<void> main() async {
   usePathUrlStrategy();
+  late String supabaseUrl;
+  late String supabaseAnonKey;
+  if (const bool.hasEnvironment("SUPABASE_URL") &&
+      const bool.hasEnvironment("SUPABASE_ANON_KEY")) {
+    supabaseUrl = const String.fromEnvironment("SUPABASE_URL");
+    supabaseAnonKey = const String.fromEnvironment("SUPABASE_ANON_KEY");
+  } else {
+    await dotenv.load(fileName: ".env");
+    supabaseUrl = dotenv.env["SUPABASE_URL"]!;
+    supabaseAnonKey = dotenv.env["SUPABASE_ANON_KEY"]!;
+  }
   await Supabase.initialize(
-    url: const String.fromEnvironment("SUPABASE_URL"),
-    anonKey: const String.fromEnvironment("SUPABASE_ANON_KEY"),
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
   );
   runApp(const InvoiceApp());
 }
