@@ -116,8 +116,8 @@ class _Dashboard extends State<Dashboard> {
           LucideIcons.plus,
           size: 30,
         ),
-        onPressed: () async{
-       Navigator.of(context).pushNamed('/templates');
+        onPressed: () {
+          Navigator.of(context).pushNamed('/templates');
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -132,6 +132,7 @@ class _Dashboard extends State<Dashboard> {
         unselectedItemColor: Colors.grey,
         onTap: (int index) {
           setState(() {
+            if (currIndex == index) return;
             currIndex = index;
             getInvoices();
           });
