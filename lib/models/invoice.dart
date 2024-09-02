@@ -1,14 +1,14 @@
 import 'package:intl/intl.dart';
 import 'package:invoice/models/template.dart';
 
-enum InvoiceStatus { draft, sent, paid, cancelled, inReview }
+enum InvoiceStatus { draft, sent, paid, overDue, inReview }
 
 Map<String, InvoiceStatus> invoiceStateMap = {
   'Draft': InvoiceStatus.draft,
   'In Review': InvoiceStatus.inReview,
   'Sent': InvoiceStatus.sent,
   'Paid': InvoiceStatus.paid,
-  'Overdue': InvoiceStatus.cancelled,
+  'Overdue': InvoiceStatus.overDue,
 };
 
 class InvoiceClient {

@@ -1,18 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:invoice/constants/constants.dart';
+import 'package:invoice/models/invoice.dart';
 import 'package:invoice/models/template.dart';
 
-class InvoiceTemplatePreview extends StatelessWidget {
-  const InvoiceTemplatePreview({super.key, required this.template});
+class InvoicePreview extends StatelessWidget {
+  InvoicePreview({super.key, this.template, this.invoice});
 
-  final InvoiceTemplate template;
+  final InvoiceTemplate? template;
+  final Invoice? invoice;
+
+  final InvoiceSection _invoiceInfoSection = invoiceInfoSection();
+  final InvoiceSection _clientSection = invoiceClientSection();
 
   @override
   Widget build(BuildContext context) {
+    List<InvoiceSection> sections = [];
+    if (invoice != null) {
+      _invoiceInfoSection.fields![0].value = invoice!.invoiceNumber;
+      _invoiceInfoSection.fields![1].value =
+          DateFormat('yyyy-MM-dd').format(invoice!.issueDate);
+      _invoiceInfoSection.fields![2].value =
+          DateFormat('yyyy-MM-dd').format(invoice!.dueDate);
+      _clientSection.fields![0].value = invoice!.client.name;
+      _clientSection.fields![1].value = invoice!.client.email;
+      _clientSection.fields![2].value = invoice!.client.address;
+      _clientSection.fields![3].value = invoice!.client.phone;
+      sections = [_invoiceInfoSection, _clientSection, ...invoice!.sections];
+    }
+
+    if (template != null) {
+      _invoiceInfoSection.fields![0].value =
+          "${template!.invoiceNumberPrefix}-001";
+      sections = [_invoiceInfoSection, ...template!.sections];
+    }
+
     return InkWell(
       onTap: () {
-        Navigator.of(context).pushNamed('/new-invoice', arguments: template);
+        if (template != null) {
+          Navigator.of(context).pushNamed('/new-invoice', arguments: template);
+        }
       },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
@@ -26,15 +53,13 @@ class InvoiceTemplatePreview extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(template.header),
+                _buildHeader(
+                    template != null ? template!.header : invoice!.header),
                 const SizedBox(height: 10.0),
-                _buildSections([
-                  invoiceInfoSection(
-                      invoiceNumber: "${template.invoiceNumberPrefix}-001"),
-                  ...template.sections
-                ]),
+                _buildSections(sections),
                 const SizedBox(height: 10.0),
-                _buildFooter(template.footer),
+                _buildFooter(
+                    template != null ? template!.footer : invoice!.footer),
               ],
             ),
           ),

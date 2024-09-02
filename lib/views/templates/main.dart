@@ -58,7 +58,7 @@ class _InvoiceTemplatesListPageState extends State<InvoiceTemplatesListPage> {
                 itemCount: _templates.length,
                 controller: PageController(viewportFraction: 0.8),
                 itemBuilder: (context, index) {
-                  return InvoiceTemplatePreview(template: _templates[index]);
+                  return InvoicePreview(template: _templates[index]);
                 },
               ),
       ),
