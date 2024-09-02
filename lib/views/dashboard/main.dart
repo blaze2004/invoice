@@ -91,6 +91,11 @@ class _Dashboard extends State<Dashboard> {
 
   @override
   Widget build(context) {
+    int? pageIndex = (ModalRoute.of(context)?.settings.arguments) as int?;
+    if (pageIndex != null) {
+      currIndex = pageIndex;
+    }
+
     List<Invoice> items = (currIndex == 0) ? _inboxItems : _draftItems;
     return Scaffold(
       backgroundColor: ShadTheme.of(context).colorScheme.background,
@@ -139,34 +144,39 @@ class _Dashboard extends State<Dashboard> {
                 style: TextStyle(fontSize: 30),
               ),
             )
-          : ListView.builder(
-              shrinkWrap: true,
-              itemCount: items.length,
-              itemBuilder: (ctx, index) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      if (currIndex == 1) {
-                        return InvoiceForm(invoice: items[index]);
-                      }
-                      return const InvoiceActionsView();
-                    }));
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        titlePart(items[index].name,
-                            items[index].invoiceNumber.toString()),
-                        trailingPart(items[index].status),
-                      ],
-                    ),
-                  ),
-                );
+          : RefreshIndicator(
+              onRefresh: () async {
+                getInvoices();
               },
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: items.length,
+                itemBuilder: (ctx, index) {
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        if (currIndex == 1) {
+                          return InvoiceForm(invoice: items[index]);
+                        }
+                        return const InvoiceActionsView();
+                      }));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          titlePart(items[index].name,
+                              items[index].invoiceNumber.toString()),
+                          trailingPart(items[index].status),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
     );
   }
@@ -174,6 +184,7 @@ class _Dashboard extends State<Dashboard> {
   Widget titlePart(String name, String invoiceNumber) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         const CircleAvatar(
           radius: 25,
@@ -188,11 +199,16 @@ class _Dashboard extends State<Dashboard> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              name,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 220),
+              child: Text(
+                name,
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 4),

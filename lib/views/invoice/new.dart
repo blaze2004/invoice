@@ -4,26 +4,44 @@ import 'package:invoice/models/invoice.dart';
 import 'package:invoice/models/template.dart';
 import 'package:invoice/views/invoice/invoice_form.dart';
 
-class NewInvoicePage extends StatelessWidget {
+class NewInvoicePage extends StatefulWidget {
   const NewInvoicePage({super.key});
+
+  @override
+  State<NewInvoicePage> createState() => _NewInvoicePageState();
+}
+
+class _NewInvoicePageState extends State<NewInvoicePage> {
+  int? organizationId;
+
+  void getOrganizationId() async {
+    final data = await supabase
+        .from('user_organizations')
+        .select('organization_id')
+        .limit(1)
+        .single();
+    setState(() {
+      organizationId = data['organization_id'] as int;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getOrganizationId();
+  }
 
   @override
   Widget build(BuildContext context) {
     InvoiceTemplate template =
         (ModalRoute.of(context)?.settings.arguments) as InvoiceTemplate;
 
-    late final int organizationId;
-
-    void getOrganizationId() async {
-      final data = await supabase
-          .from('user_organizations')
-          .select('organization_id')
-          .limit(1)
-          .single();
-      organizationId = data['organization_id'] as int;
+    if (organizationId == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: CircularProgressIndicator()),
+      );
     }
-
-    getOrganizationId();
 
     return InvoiceForm(
         invoice: Invoice(
@@ -39,7 +57,7 @@ class NewInvoicePage extends StatelessWidget {
       templateId: template.id,
       status: InvoiceStatus.draft,
       createdBy: supabase.auth.currentUser!.id,
-      organizationId: organizationId,
+      organizationId: organizationId!,
     ));
   }
 }

@@ -56,6 +56,7 @@ class InvoiceActionsMenu extends StatelessWidget {
             title: Text('Invoice saved successfully.'),
           ),
         );
+        Navigator.of(context).pushReplacementNamed('/dashboard', arguments: 1);
       } catch (e) {
         log(e.toString());
         ShadToaster.of(context).show(

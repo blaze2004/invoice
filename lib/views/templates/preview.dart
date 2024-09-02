@@ -47,13 +47,7 @@ class InvoiceTemplatePreview extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Image.network(
-          header.logo,
-          height: 50.0,
-          errorBuilder: (context, error, stackTrace) {
-            return const Icon(Icons.edit_document);
-          },
-        ),
+        const Icon(Icons.edit_document),
         Text(
           header.title,
           style: const TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
