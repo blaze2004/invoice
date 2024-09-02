@@ -45,6 +45,7 @@ dependencies:
   shadcn_ui: ^0.8.1
   email_validator: ^3.0.0
   file_saver: ^0.2.14
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:

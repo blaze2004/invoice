@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:invoice/proivder/organization.dart';
 import 'package:invoice/splash_page.dart';
 import 'package:invoice/views/auth/onboarding.dart';
 import 'package:invoice/views/auth/signin.dart';
@@ -7,6 +8,7 @@ import 'package:invoice/views/auth/signup.dart';
 import 'package:invoice/views/dashboard/main.dart';
 import 'package:invoice/views/invoice/new.dart';
 import 'package:invoice/views/templates/main.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -28,7 +30,13 @@ Future<void> main() async {
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
   );
-  runApp(const InvoiceApp());
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => OrganizationProvider(),
+      child: const InvoiceApp(),
+    ),
+  );
 }
 
 final supabase = Supabase.instance.client;

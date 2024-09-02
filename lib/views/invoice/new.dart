@@ -1,46 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
+import 'package:invoice/models/organization.dart';
 import 'package:invoice/models/template.dart';
+import 'package:invoice/proivder/organization.dart';
 import 'package:invoice/views/invoice/invoice_form.dart';
+import 'package:provider/provider.dart';
 
-class NewInvoicePage extends StatefulWidget {
+class NewInvoicePage extends StatelessWidget {
   const NewInvoicePage({super.key});
-
-  @override
-  State<NewInvoicePage> createState() => _NewInvoicePageState();
-}
-
-class _NewInvoicePageState extends State<NewInvoicePage> {
-  int? organizationId;
-
-  void getOrganizationId() async {
-    final data = await supabase
-        .from('user_organizations')
-        .select('organization_id')
-        .limit(1)
-        .single();
-    setState(() {
-      organizationId = data['organization_id'] as int;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    getOrganizationId();
-  }
 
   @override
   Widget build(BuildContext context) {
     InvoiceTemplate template =
         (ModalRoute.of(context)?.settings.arguments) as InvoiceTemplate;
 
-    if (organizationId == null) {
-      return Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
-      );
+    Organization? organization =
+        Provider.of<OrganizationProvider>(context).selectedOrganization;
+
+    if (organization == null) {
+      Navigator.of(context).pushReplacementNamed("/dashboard");
     }
 
     return InvoiceForm(
@@ -57,7 +36,7 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
       templateId: template.id,
       status: InvoiceStatus.draft,
       createdBy: supabase.auth.currentUser!.id,
-      organizationId: organizationId!,
+      organizationId: organization!.id,
     ));
   }
 }

@@ -1,18 +1,18 @@
-import 'dart:developer';
-
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:invoice/constants/constants.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/member.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OrgMembersPage extends StatefulWidget {
   const OrgMembersPage(
-      {super.key, required this.organizationId, required this.userRole});
+      {super.key, required this.organizationId, required this.userRole, required this.getOrganizations});
 
   final int organizationId;
   final String userRole;
+  final Future<void> Function() getOrganizations;
 
   @override
   State<OrgMembersPage> createState() => _OrgMembersPageState();
@@ -21,6 +21,65 @@ class OrgMembersPage extends StatefulWidget {
 class _OrgMembersPageState extends State<OrgMembersPage> {
   final List<OrgMember> _members = [];
   final List<InvitedMember> _invitedMembers = [];
+  final Map<int, String> orgInvites = {};
+
+  int joinLoading = -1;
+
+  void joinOrg(int id) async {
+    setState(() {
+      joinLoading = id;
+    });
+    try {
+      await supabase.from('organization_members').insert({
+        'organization_id': id,
+        'user_id': supabase.auth.currentUser!.id,
+      });
+
+      widget.getOrganizations();
+      if (mounted) {
+        ShadToaster.of(context).show(
+          const ShadToast(
+            title: Text('Success'),
+            description: Text('Organization joined successfully'),
+          ),
+        );
+      }
+    } on PostgrestException {
+      if (mounted) {
+        ShadToaster.of(context).show(
+          const ShadToast.destructive(
+            title: Text('Error'),
+            description: Text('An error occurred'),
+          ),
+        );
+      }
+    }
+    setState(() {
+      joinLoading = -1;
+    });
+  }
+
+  Future<void> getOrgInvites() async {
+    String? email = supabase.auth.currentUser!.email;
+    if (email == null) {
+      return;
+    }
+    final data = await supabase
+        .from("organization_invitations")
+        .select("*, organizations(name)")
+        .eq("email", email);
+
+    Map<int, String> invites = {};
+
+    for (var element in data) {
+      invites[element['organization_id']] = element['organizations']['name'];
+    }
+
+    setState(() {
+      orgInvites.clear();
+      orgInvites.addAll(invites);
+    });
+  }
 
   void getMembers() async {
     List<OrgMember> members = [];
@@ -125,6 +184,7 @@ class _OrgMembersPageState extends State<OrgMembersPage> {
   @override
   void initState() {
     getMembers();
+    getOrgInvites();
     super.initState();
   }
 
@@ -136,6 +196,48 @@ class _OrgMembersPageState extends State<OrgMembersPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (orgInvites.isNotEmpty) ...[
+              Text(
+                'Invitations',
+                style: ShadTheme.of(context).textTheme.h3,
+              ),
+              const SizedBox(height: 10),
+              for (var invite in orgInvites.entries)
+                Card(
+                  margin: const EdgeInsets.all(2),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.secondary,
+                      width: 2.0,
+                    ),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(
+                      LucideIcons.globe,
+                    ),
+                    title: Text(
+                      invite.value,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    trailing: ShadButton(
+                      icon: joinLoading == invite.key
+                          ? const SizedBox.square(
+                              dimension: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : null,
+                      onPressed: () => joinOrg(invite.key),
+                      child: const Text('Join'),
+                    ),
+                  ),
+                ),
+            ],
             if (widget.userRole == "Admin") ...[
               Text(
                 'Invited Members',
@@ -156,8 +258,9 @@ class _OrgMembersPageState extends State<OrgMembersPage> {
                     ),
                     child: ListTile(
                       leading: Icon(Icons.person,
-                        color:
-                            member.role == "Admin" ? Colors.red : Colors.teal),
+                          color: member.role == "Admin"
+                              ? Colors.red
+                              : Colors.teal),
                       title: Text(
                         member.email,
                         overflow: TextOverflow.ellipsis,

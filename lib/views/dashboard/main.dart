@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
+import 'package:invoice/models/organization.dart';
+import 'package:invoice/proivder/organization.dart';
 import 'package:invoice/views/dashboard/members.dart';
 import 'package:invoice/views/dashboard/view_invoice.dart';
 import 'package:invoice/views/invoice/invoice_form.dart';
+import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -18,40 +21,50 @@ class Dashboard extends StatefulWidget {
 
 class _Dashboard extends State<Dashboard> {
   Session? session = supabase.auth.currentSession;
-  String userRole = 'Staff';
-  int? orgnizationId;
+
+  final List<Organization> _organizations = [];
+
   List<Invoice> _inboxItems = [];
   List<Invoice> _draftItems = [];
 
   int currIndex = 0;
 
-  String getName() {
-    String name = (session?.user.userMetadata?['full_name'].toString() ?? "")
-        .split(" ")[0];
-    return name.length > 1
-        ? name[0].toUpperCase() + name.substring(1)
-        : name.toUpperCase();
-  }
-
-  Future<void> checkOrganization() async {
+  Future<void> getOrganizations() async {
     final data = await supabase
         .from("user_organizations")
-        .select("role, organization_id")
-        .limit(1)
-        .maybeSingle();
-    if (data == null) {
+        .select("role, organizations(id, name)");
+    if (data.isEmpty) {
       if (mounted) {
         Navigator.of(context).restorablePushNamed('/onboarding');
       }
     } else {
-      orgnizationId = data['organization_id'];
-      userRole = data['role'];
+      List<Organization> organizations = [];
+      for (var element in data) {
+        organizations.add(Organization.fromJson(element));
+      }
+
+      setState(() {
+        _organizations.clear();
+        _organizations.addAll(organizations);
+      });
+
+      if (mounted) {
+        Provider.of<OrganizationProvider>(context, listen: false)
+            .selectOrganization(organizations[0]);
+      }
     }
   }
 
   Future<void> getInvoices() async {
     List<Map<String, dynamic>> invoices = [];
-    final data = await supabase.from("invoices").select('*');
+    Organization organization =
+        Provider.of<OrganizationProvider>(context, listen: false)
+            .selectedOrganization!;
+    final data = await supabase
+        .from("invoices")
+        .select('*')
+        .eq('organization_id', organization.id);
+
     for (var element in data) {
       invoices.add(element);
     }
@@ -84,13 +97,17 @@ class _Dashboard extends State<Dashboard> {
     }
   }
 
+  void initializeOrg() async {
+    await getOrganizations();
+    await getInvoices();
+  }
+
   @override
   void initState() {
     if (session == null) {
       Navigator.of(context).restorablePushReplacementNamed('/login');
     } else {
-      checkOrganization();
-      getInvoices();
+      initializeOrg();
     }
     super.initState();
   }
@@ -99,19 +116,21 @@ class _Dashboard extends State<Dashboard> {
   Widget build(context) {
     List<Invoice> items = (currIndex == 0) ? _inboxItems : _draftItems;
 
-    if (orgnizationId == null) {
+    Organization? organization =
+        Provider.of<OrganizationProvider>(context).selectedOrganization;
+
+    if (organization == null) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
         ),
       );
     }
+
     return Scaffold(
       backgroundColor: ShadTheme.of(context).colorScheme.background,
       appBar: AppBar(
-        title: Text(
-          getName(),
-        ),
+        title: organizationSelector(organization.id),
         actions: [
           IconButton(
             onPressed: _logOut,
@@ -152,8 +171,9 @@ class _Dashboard extends State<Dashboard> {
       ),
       body: (currIndex == 2)
           ? OrgMembersPage(
-              userRole: userRole,
-              organizationId: orgnizationId!,
+              userRole: organization.userRole,
+              organizationId: organization.id,
+              getOrganizations: getOrganizations,
             )
           : (items.isEmpty)
               ? const Center(
@@ -173,13 +193,13 @@ class _Dashboard extends State<Dashboard> {
                       return InkWell(
                         onTap: () {
                           if (currIndex == 0) {
-                            if (userRole == 'Admin') {
+                            if (organization.userRole == 'Admin') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) {
                                   return AdminInvoiceActionsPage(
                                     invoice: items[index],
-                                    userRole: userRole,
+                                    userRole: organization.userRole,
                                   );
                                 }),
                               );
@@ -207,6 +227,33 @@ class _Dashboard extends State<Dashboard> {
                     },
                   ),
                 ),
+    );
+  }
+
+  Widget organizationSelector(int organizationId) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 180),
+      child: ShadSelect<int>(
+        placeholder: const Text('Select Organization'),
+        initialValue: organizationId,
+        options: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(32, 6, 6, 6),
+            child: Text(
+              'Organizations',
+              style: ShadTheme.of(context).textTheme.muted.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: ShadTheme.of(context).colorScheme.popoverForeground,
+                  ),
+              textAlign: TextAlign.start,
+            ),
+          ),
+          ..._organizations
+              .map((e) => ShadOption(value: e.id, child: Text(e.name))),
+        ],
+        selectedOptionBuilder: (context, value) => Text(
+            _organizations.firstWhere((element) => element.id == value).name),
+      ),
     );
   }
 
