@@ -8,22 +8,48 @@ import 'package:invoice/views/invoice/to_pdf.dart';
 import 'package:open_file_plus/open_file_plus.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-class InvoiceSaveMenu extends StatelessWidget {
-  const InvoiceSaveMenu(
+class InvoiceActionsMenu extends StatelessWidget {
+  const InvoiceActionsMenu(
       {super.key, required this.invoice, required this.invoiceFormKey});
 
   final Invoice invoice;
   final GlobalKey<ShadFormState> invoiceFormKey;
+
+  void _submitForApproval(BuildContext context) async {
+    if (invoice.id == null) {
+      const ShadToast(
+        title: Text('Please save the invoice before submitting for approval.'),
+      );
+    }
+    try {
+      await supabase.from("invoices").update({
+        'status': 'In Review',
+      }).eq('id', invoice.id!);
+      ShadToaster.of(context).show(
+        const ShadToast(
+          title: Text('Invoice submitted for approval.'),
+        ),
+      );
+    } catch (e) {
+      log(e.toString());
+      ShadToaster.of(context).show(
+        const ShadToast.destructive(
+          title:
+              Text('Failed to submit invoice for approval. Please try again.'),
+        ),
+      );
+    }
+  }
 
   void _saveInvoice(BuildContext context) async {
     if (invoiceFormKey.currentState!.validate()) {
       invoiceFormKey.currentState!.save();
       try {
         Map<String, dynamic> data = invoice.toJson();
-        if (data['remove'] == null) {
+        if (data['id'] == null) {
           data.remove('id');
         }
-        await supabase.from("invoices").insert(data);
+        await supabase.from("invoices").upsert(data);
 
         ShadToaster.of(context).show(
           const ShadToast(
@@ -102,8 +128,8 @@ class InvoiceSaveMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 170,
       width: 200,
+      height: 220,
       child: ListView(
         children: [
           ListTile(
@@ -113,6 +139,14 @@ class InvoiceSaveMenu extends StatelessWidget {
               _saveInvoice(context);
             },
           ),
+          if (invoice.id != null)
+            ListTile(
+              title: const Text("Submit for Approval"),
+              leading: const Icon(Icons.send),
+              onTap: () {
+                _submitForApproval(context);
+              },
+            ),
           ListTile(
             title: const Text("Email"),
             leading: const Icon(Icons.email),

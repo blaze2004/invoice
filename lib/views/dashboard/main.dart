@@ -1,12 +1,9 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/views/dashboard/view_invoice.dart';
+import 'package:invoice/views/invoice/invoice_form.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Dashboard extends StatefulWidget {
@@ -48,19 +45,9 @@ class _Dashboard extends State<Dashboard> {
 
   Future<void> getInvoices() async {
     List<Map<String, dynamic>> invoices = [];
-    if (session == null) {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      final String? localInvoiceData = prefs.getString("localInvoiceData");
-      if (localInvoiceData != null) {
-        jsonDecode(localInvoiceData).forEach((key, value) {
-          invoices.add(value);
-        });
-      }
-    } else {
-      final data = await supabase.from("invoices").select('*');
-      for (var element in data) {
-        invoices.add(element);
-      }
+    final data = await supabase.from("invoices").select('*');
+    for (var element in data) {
+      invoices.add(element);
     }
 
     List<Invoice> inboxItems = [];
@@ -160,6 +147,9 @@ class _Dashboard extends State<Dashboard> {
                   onTap: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
+                      if (currIndex == 1) {
+                        return InvoiceForm(invoice: items[index]);
+                      }
                       return const InvoiceActionsView();
                     }));
                   },
