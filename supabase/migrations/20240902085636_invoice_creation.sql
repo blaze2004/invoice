@@ -1,5 +1,5 @@
 -- trigger to generate invoice number for new invoices
-CREATE SEQUENCE invoice_seq;
+CREATE SEQUENCE IF NOT EXISTS  invoice_seq;
 
 CREATE FUNCTION public.generate_invoice_number()
 RETURNS TRIGGER AS $$
