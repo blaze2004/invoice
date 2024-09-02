@@ -16,7 +16,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 Future<void> main() async {
   usePathUrlStrategy();
   await dotenv.load(
-      fileName: ".env", mergeWith: kIsWeb ? {} : Platform.environment);
+      fileName: kIsWeb ? 'env': ".env");
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
