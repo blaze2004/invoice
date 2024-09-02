@@ -17,6 +17,7 @@ class Dashboard extends StatefulWidget {
 
 class _Dashboard extends State<Dashboard> {
   Session? session = supabase.auth.currentSession;
+  String userRole = 'Staff';
   List<Invoice> _inboxItems = [];
   List<Invoice> _draftItems = [];
 
@@ -33,13 +34,15 @@ class _Dashboard extends State<Dashboard> {
   Future<void> checkOrganization() async {
     final data = await supabase
         .from("user_organizations")
-        .select()
+        .select("role")
         .limit(1)
         .maybeSingle();
     if (data == null) {
       if (mounted) {
         Navigator.of(context).restorablePushNamed('/onboarding');
       }
+    } else {
+      userRole = data['role'];
     }
   }
 
@@ -154,13 +157,23 @@ class _Dashboard extends State<Dashboard> {
                 itemBuilder: (ctx, index) {
                   return InkWell(
                     onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        if (currIndex == 1) {
-                          return InvoiceForm(invoice: items[index]);
+                      if (currIndex == 0) {
+                        if (userRole == 'Admin') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return AdminInvoiceActionsPage(
+                                invoice: items[index],
+                              );
+                            }),
+                          );
                         }
-                        return const InvoiceActionsView();
-                      }));
+                      } else {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          return InvoiceForm(invoice: items[index]);
+                        }));
+                      }
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(16),
