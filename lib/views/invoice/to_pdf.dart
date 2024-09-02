@@ -53,7 +53,14 @@ class InvoicePdf {
           ),
         ),
         ...invoice.header.details.map((detail) {
-          return pw.Text('${detail.label}: ${detail.value}');
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(detail.label,
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              pw.Text(detail.value),
+            ],
+          );
         }),
       ],
     );
@@ -63,9 +70,61 @@ class InvoicePdf {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text('Invoice Number: ${invoice.invoiceNumber}'),
-        pw.Text('Issue Date: ${invoice.issueDate.toString().substring(0, 10)}'),
-        pw.Text('Due Date: ${invoice.dueDate.toString().substring(0, 10)}'),
+        pw.Text(
+          'Invoice Details',
+          style: pw.TextStyle(
+            fontSize: 18,
+            fontWeight: pw.FontWeight.bold,
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(vertical: 2),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text(
+                'Invoice Number',
+                style: const pw.TextStyle(fontSize: 16),
+              ),
+              pw.Text(
+                invoice.invoiceNumber,
+                style: const pw.TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(vertical: 2),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text(
+                'Issue Date',
+                style: const pw.TextStyle(fontSize: 16),
+              ),
+              pw.Text(
+                DateFormat('yyyy-MM-dd').format(invoice.issueDate),
+                style: const pw.TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(vertical: 2),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text(
+                'Due Date',
+                style: const pw.TextStyle(fontSize: 16),
+              ),
+              pw.Text(
+                DateFormat('yyyy-MM-dd').format(invoice.dueDate),
+                style: const pw.TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

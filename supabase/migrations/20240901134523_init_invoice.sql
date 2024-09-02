@@ -7,6 +7,7 @@ CREATE TABLE invoice_templates (
     header JSON NOT NULL,
     sections JSON NOT NULL,
     footer Text,
+    invoice_number_prefix TEXT NOT NULL DEFAULT 'INV',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     created_by uuid REFERENCES public.profiles ON DELETE Set NULL DEFAULT (auth.uid())
 );

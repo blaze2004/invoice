@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:invoice/constants/constants.dart';
@@ -19,47 +20,25 @@ class NewInvoicePage extends StatefulWidget {
 class _NewInvoicePageState extends State<NewInvoicePage> {
   final formKey = GlobalKey<ShadFormState>();
 
-  // void saveInvoice(InvoiceTemplate template) async {
-  //   if (formKey.currentState!.validate()) {
-  //     formKey.currentState!.save();
-  //     try {
-  //       Invoice invoice = Invoice(
-  //         name: template.header.title,
-  //         description: template.description,
-  //         header: template.header,
-  //         sections: template.sections,
-  //         footer: template.footer,
-  //         templateId: template.id,
-  //         createdBy: supabase.auth.currentUser!.id,
-  //         status: InvoiceStatus.draft,
-  //         invoiceNumber: "",
-  //         issueDate: DateTime.now(),
-  //         dueDate: DateTime.now().add(const Duration(days: 30)),
-  //         totalAmount: 0.0,
-  //       );
-  //       await supabase.from("invoices").insert(invoice.toJson());
-  //       if (mounted) {
-  //         ShadToaster.of(context).show(
-  //           const ShadToast(
-  //             title: Text('Success'),
-  //             description: Text('Invoice saved successfully.'),
-  //           ),
-  //         );
-  //       }
-  //     } catch (e) {
-  //       if (mounted) {
-  //         ShadToaster.of(context).show(
-  //           const ShadToast.destructive(
-  //             title: Text('Error'),
-  //             description: Text('Error saving to cloud.'),
-  //           ),
-  //         );
-  //       }
-  //     }
-  //     // Save the invoice
-  //     // Navigator.of(context).pop();
-  //   }
-  // }
+  final InvoiceSection _invoiceInfoSection = invoiceInfoSection();
+  final InvoiceSection _clientSection = invoiceClientSection();
+
+  late final int organizationId;
+
+  void getOrganizationId() async {
+    final data = await supabase
+        .from('user_organizations')
+        .select('organization_id')
+        .limit(1)
+        .single();
+    organizationId = data['organization_id'] as int;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getOrganizationId();
+  }
 
   void showMoreOptionsPopup(BuildContext context, InvoiceTemplate template) {
     showDialog(
@@ -67,18 +46,30 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
         builder: (BuildContext context) {
           return Dialog(
             child: InvoiceSaveMenu(
+              invoiceFormKey: formKey,
               invoice: Invoice(
-                  name: template.header.title,
-                  description: template.description,
-                  header: template.header,
-                  sections: template.sections,
-                  footer: template.footer,
-                  invoiceNumber: "",
-                  issueDate: DateTime.now(),
-                  dueDate:DateTime.now(),
-                  templateId: template.id,
-                  status: InvoiceStatus.draft,
-                  createdBy: supabase.auth.currentUser!.id,),
+                name: template.header.title,
+                description: template.description,
+                header: template.header,
+                sections: template.sections,
+                footer: template.footer,
+                client: InvoiceClient(
+                    address: _clientSection.fields![2].value,
+                    email: _clientSection.fields![1].value,
+                    name: _clientSection.fields![0].value,
+                    phone: _clientSection.fields![3].value),
+                invoiceNumber: _invoiceInfoSection.fields![0].value,
+                issueDate: _invoiceInfoSection.fields![1].value.isEmpty
+                    ? DateTime.now()
+                    : DateTime.parse(_invoiceInfoSection.fields![1].value),
+                dueDate: _invoiceInfoSection.fields![2].value.isEmpty
+                    ? DateTime.now().add(const Duration(days: 30))
+                    : DateTime.parse(_invoiceInfoSection.fields![2].value),
+                templateId: template.id,
+                status: InvoiceStatus.draft,
+                createdBy: supabase.auth.currentUser!.id,
+                organizationId: organizationId,
+              ),
             ),
           );
         });
@@ -88,6 +79,9 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
   Widget build(BuildContext context) {
     InvoiceTemplate template =
         (ModalRoute.of(context)?.settings.arguments) as InvoiceTemplate;
+    if (_invoiceInfoSection.fields![0].value.isEmpty) {
+      _invoiceInfoSection.fields![0].value = template.invoiceNumberPrefix;
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -95,7 +89,11 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
+          IconButton(
+              onPressed: () {
+                showMoreOptionsPopup(context, template);
+              },
+              icon: const Icon(Icons.more_vert))
         ],
       ),
       body: SingleChildScrollView(
@@ -108,7 +106,11 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
               children: [
                 _buildHeader(template.header),
                 const SizedBox(height: 10.0),
-                _buildSections(template.sections),
+                _buildSections([
+                  _invoiceInfoSection,
+                  _clientSection,
+                  ...template.sections
+                ]),
                 const SizedBox(height: 10.0),
                 _buildFooter(template.footer, template),
               ],
@@ -233,7 +235,7 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
             ),
             field.editable
                 ? ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 320),
+                    constraints: const BoxConstraints(maxWidth: 200),
                     child: field.type == InvoiceSectionFieldType.date
                         ? InkWell(
                             onTap: () {
@@ -282,6 +284,18 @@ class _NewInvoicePageState extends State<NewInvoicePage> {
                             validator: (v) {
                               if (v.isEmpty) {
                                 return 'This field is required.';
+                              }
+
+                              if (field.type == InvoiceSectionFieldType.email) {
+                                if (!EmailValidator.validate(v)) {
+                                  return 'Invalid email address.';
+                                }
+                              }
+
+                              if (field.type == InvoiceSectionFieldType.phone) {
+                                if (v.length < 10) {
+                                  return 'Invalid phone number.';
+                                }
                               }
                               return null;
                             },

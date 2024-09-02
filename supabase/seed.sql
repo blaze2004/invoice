@@ -1,4 +1,4 @@
-INSERT INTO invoice_templates (name, description, header, sections, footer)
+INSERT INTO invoice_templates (name, description, header, sections, footer, invoice_number_prefix)
 VALUES
 ('University Purchase Invoice', 'Template for university purchases like books and computers', '{
         "title": "University Purchase Invoice",
@@ -13,29 +13,6 @@ VALUES
             }
         ]
     }', '[
-        {
-            "title": "Invoice Details",
-            "fields": [
-                {
-                    "label": "Invoice Number",
-                    "value": "PUR-001",
-                    "editable": false,
-                    "type": "text"
-                },
-                {
-                    "label": "Date",
-                    "value": "2024-08-01",
-                    "editable": true,
-                    "type": "date"
-                },
-                {
-                    "label": "Due Date",
-                    "value": "2024-08-31",
-                    "editable": true,
-                    "type": "date"
-                }
-            ]
-        },
         {
             "title": "Books",
             "showQuantity": true,
@@ -70,7 +47,7 @@ VALUES
                 }
             ]
         }
-    ]', 'Thank you for your purchase!'),
+    ]', 'Thank you for your purchase!', 'UNI'),
 ('Public Library Acquisition Invoice', 'Template for public library acquisitions and maintenance', '{
         "title": "Public Library Acquisition Invoice",
         "details": [
@@ -84,29 +61,6 @@ VALUES
             }
         ]
     }', '[
-        {
-            "title": "Invoice Details",
-            "fields": [
-                {
-                    "label": "Invoice Number",
-                    "value": "LIB-001",
-                    "editable": false,
-                    "type": "text"
-                },
-                {
-                    "label": "Date",
-                    "value": "2024-07-20",
-                    "editable": true,
-                    "type": "date"
-                },
-                {
-                    "label": "Due Date",
-                    "value": "2024-08-20",
-                    "editable": true,
-                    "type": "date"
-                }
-            ]
-        },
         {
             "title": "New Books Collection",
             "showQuantity": true,
@@ -135,7 +89,7 @@ VALUES
                 }
             ]
         }
-    ]', 'Thank you for supporting the library!'),
+    ]', 'Thank you for supporting the library!', 'LIB'),
 ('Hospital Medical Supplies Invoice', 'Template for hospital medical supplies and equipment', '{
         "title": "Hospital Medical Supplies Invoice",
         "details": [
@@ -149,29 +103,6 @@ VALUES
             }
         ]
     }', '[
-        {
-            "title": "Invoice Details",
-            "fields": [
-                {
-                    "label": "Invoice Number",
-                    "value": "MED-001",
-                    "editable": false,
-                    "type": "text"
-                },
-                {
-                    "label": "Date",
-                    "value": "2024-09-01",
-                    "editable": true,
-                    "type": "date"
-                },
-                {
-                    "label": "Due Date",
-                    "value": "2024-09-30",
-                    "editable": true,
-                    "type": "date"
-                }
-            ]
-        },
         {
             "title": "Medical Equipment",
             "showQuantity": true,
@@ -206,7 +137,7 @@ VALUES
                 }
             ]
         }
-    ]', 'Thank you for your prompt payment!'),
+    ]', 'Thank you for your prompt payment!', 'HOSP'),
 ('City Department Maintenance Invoice', 'Template for city department maintenance services', '{
         "title": "City Department Maintenance Invoice",
         "details": [
@@ -220,29 +151,6 @@ VALUES
             }
         ]
     }', '[
-        {
-            "title": "Invoice Details",
-            "fields": [
-                {
-                    "label": "Invoice Number",
-                    "value": "MAINT-001",
-                    "editable": false,
-                    "type": "text"
-                },
-                {
-                    "label": "Date",
-                    "value": "2024-07-15",
-                    "editable": true,
-                    "type": "date"
-                },
-                {
-                    "label": "Due Date",
-                    "value": "2024-08-14",
-                    "editable": true,
-                    "type": "date"
-                }
-            ]
-        },
         {
             "title": "Road Repairs",
             "showQuantity": false,
@@ -269,4 +177,4 @@ VALUES
                 }
             ]
         }
-    ]', 'Thank you for maintaining our city!');
+    ]', 'Thank you for maintaining our city!', 'DEPT');

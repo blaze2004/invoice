@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:invoice/constants/constants.dart';
 import 'package:invoice/models/template.dart';
 
 class InvoiceTemplatePreview extends StatelessWidget {
@@ -27,7 +28,11 @@ class InvoiceTemplatePreview extends StatelessWidget {
               children: [
                 _buildHeader(template.header),
                 const SizedBox(height: 10.0),
-                _buildSections(template.sections),
+                _buildSections([
+                  invoiceInfoSection(
+                      invoiceNumber: "${template.invoiceNumberPrefix}-001"),
+                  ...template.sections
+                ]),
                 const SizedBox(height: 10.0),
                 _buildFooter(template.footer),
               ],

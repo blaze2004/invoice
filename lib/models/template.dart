@@ -104,7 +104,7 @@ class InvoiceSection {
   }
 }
 
-enum InvoiceSectionFieldType { text, number, date, currency }
+enum InvoiceSectionFieldType { text, number, date, currency, email, phone }
 
 class InvoiceSectionField {
   final String label;
@@ -173,6 +173,7 @@ class InvoiceTemplate {
   final int id;
   final String name;
   final String description;
+  final String invoiceNumberPrefix;
   final InvoiceHeader header;
   final List<InvoiceSection> sections;
   String footer;
@@ -184,6 +185,7 @@ class InvoiceTemplate {
     required this.header,
     required this.sections,
     this.footer = "",
+    this.invoiceNumberPrefix = 'INV',
   });
 
   factory InvoiceTemplate.fromJson(Map<String, dynamic> json) {
@@ -197,6 +199,7 @@ class InvoiceTemplate {
               InvoiceSection.fromJson(section as Map<String, dynamic>))
           .toList(),
       footer: json['footer'] as String? ?? "",
+      invoiceNumberPrefix: json['invoice_number_prefix'] as String? ?? 'INV'
     );
   }
 
@@ -208,6 +211,7 @@ class InvoiceTemplate {
       'header': header.toJson(),
       'sections': sections.map((section) => section.toJson()).toList(),
       'footer': footer,
+      'invoice_number_prefix': invoiceNumberPrefix
     };
   }
 }

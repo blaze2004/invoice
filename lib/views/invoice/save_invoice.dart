@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:invoice/main.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/views/invoice/to_pdf.dart';
 import 'package:open_file_plus/open_file_plus.dart';
@@ -7,12 +10,35 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 class InvoiceSaveMenu extends StatelessWidget {
   const InvoiceSaveMenu(
-      {super.key, required this.invoice});
+      {super.key, required this.invoice, required this.invoiceFormKey});
 
   final Invoice invoice;
+  final GlobalKey<ShadFormState> invoiceFormKey;
 
-  void _saveInvoice() {
-    // saveInvoice();
+  void _saveInvoice(BuildContext context) async {
+    if (invoiceFormKey.currentState!.validate()) {
+      invoiceFormKey.currentState!.save();
+      try {
+        Map<String, dynamic> data = invoice.toJson();
+        if (data['remove'] == null) {
+          data.remove('id');
+        }
+        await supabase.from("invoices").insert(data);
+
+        ShadToaster.of(context).show(
+          const ShadToast(
+            title: Text('Invoice saved successfully.'),
+          ),
+        );
+      } catch (e) {
+        log(e.toString());
+        ShadToaster.of(context).show(
+          const ShadToast.destructive(
+            title: Text('Failed to save invoice. Please try again.'),
+          ),
+        );
+      }
+    }
   }
 
   void _askRecipientEmailPopup(BuildContext context) {
@@ -84,7 +110,7 @@ class InvoiceSaveMenu extends StatelessWidget {
             title: const Text("Save"),
             leading: const Icon(Icons.save),
             onTap: () {
-              _saveInvoice();
+              _saveInvoice(context);
             },
           ),
           ListTile(
