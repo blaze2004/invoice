@@ -243,7 +243,6 @@ class _InvoiceFormState extends State<InvoiceForm> {
                                 firstDate: DateTime(2000),
                                 lastDate: DateTime(2100),
                               ).then((value) {
-                                log('Date selected: $value');
                                 if (value != null) {
                                   setState(() {
                                     field.value =

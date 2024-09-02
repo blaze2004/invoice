@@ -242,3 +242,24 @@ CREATE TRIGGER invite_only_new_user_to_organization
     BEFORE INSERT ON organization_invitations
     FOR EACH ROW
     EXECUTE PROCEDURE invite_only_new_user_to_organization();
+
+
+-- delete invitation when user joins the organization
+CREATE OR REPLACE FUNCTION delete_invitation_on_join()
+    RETURNS TRIGGER
+    AS $$
+BEGIN
+    DELETE FROM organization_invitations
+    WHERE
+        email =(SELECT auth.jwt() ->> 'email')
+            AND organization_id = NEW.organization_id;
+    RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql
+SECURITY DEFINER;
+
+CREATE TRIGGER delete_invitation_on_join
+    AFTER INSERT ON organization_members
+    FOR EACH ROW
+    EXECUTE PROCEDURE delete_invitation_on_join();

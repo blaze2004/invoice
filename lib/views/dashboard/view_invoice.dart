@@ -126,12 +126,16 @@ class _AdminInvoiceActionsPage extends State<AdminInvoiceActionsPage> {
               if (widget.invoice.status == InvoiceStatus.paid)
                 Text(
                   'Invoice has been paid.',
-                  style: ShadTheme.of(context).textTheme.p,
+                  style: ShadTheme.of(context).textTheme.p.copyWith(
+                        color: Colors.green,
+                      ),
                 ),
               if (widget.invoice.status == InvoiceStatus.overDue)
                 Text(
                   'Invoice is overdue.',
-                  style: ShadTheme.of(context).textTheme.p,
+                  style: ShadTheme.of(context).textTheme.p.copyWith(
+                        color: Colors.red,
+                      ),
                 ),
             ],
           ),

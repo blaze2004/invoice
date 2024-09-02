@@ -19,7 +19,7 @@ class Dashboard extends StatefulWidget {
 class _Dashboard extends State<Dashboard> {
   Session? session = supabase.auth.currentSession;
   String userRole = 'Staff';
-  late int orgnizationId;
+  int? orgnizationId;
   List<Invoice> _inboxItems = [];
   List<Invoice> _draftItems = [];
 
@@ -86,18 +86,26 @@ class _Dashboard extends State<Dashboard> {
 
   @override
   void initState() {
-    super.initState();
     if (session == null) {
       Navigator.of(context).restorablePushReplacementNamed('/login');
     } else {
       checkOrganization();
       getInvoices();
     }
+    super.initState();
   }
 
   @override
   Widget build(context) {
     List<Invoice> items = (currIndex == 0) ? _inboxItems : _draftItems;
+
+    if (orgnizationId == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: ShadTheme.of(context).colorScheme.background,
       appBar: AppBar(
@@ -128,6 +136,8 @@ class _Dashboard extends State<Dashboard> {
               icon: Icon(LucideIcons.inbox), label: "Inbox"),
           BottomNavigationBarItem(
               icon: Icon(LucideIcons.fileUp), label: "Drafts"),
+          BottomNavigationBarItem(
+              icon: Icon(LucideIcons.users), label: "Members"),
         ],
         currentIndex: currIndex,
         selectedItemColor: Colors.blue,
@@ -143,7 +153,7 @@ class _Dashboard extends State<Dashboard> {
       body: (currIndex == 2)
           ? OrgMembersPage(
               userRole: userRole,
-              organizationId: orgnizationId,
+              organizationId: orgnizationId!,
             )
           : (items.isEmpty)
               ? const Center(
