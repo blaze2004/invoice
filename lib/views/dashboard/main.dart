@@ -143,9 +143,13 @@ class _Dashboard extends State<Dashboard> {
         },
       ),
       body: (currIndex == 2)
-          ? OrgMembersPage(
-              userRole: organization.userRole,
-              organizationId: organization.id,
+          ? Consumer<OrganizationProvider>(
+              builder: (context, provider, child) {
+                return OrgMembersPage(
+                  userRole: organization.userRole,
+                  organizationId: provider.selectedOrganization!.id,
+                );
+              },
             )
           : (items.isEmpty)
               ? const Center(
@@ -212,7 +216,8 @@ class _Dashboard extends State<Dashboard> {
         initialValue: organizationId,
         onChanged: (value) {
           Provider.of<OrganizationProvider>(context, listen: false)
-              .selectOrganization(organizations.firstWhere((e) => e.id == value));
+              .selectOrganization(
+                  organizations.firstWhere((e) => e.id == value));
           getInvoices();
         },
         options: [
