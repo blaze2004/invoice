@@ -29,9 +29,12 @@ class _Dashboard extends State<Dashboard> {
 
   Future<void> getInvoices() async {
     List<Map<String, dynamic>> invoices = [];
-    Organization organization =
+    Organization? organization =
         Provider.of<OrganizationProvider>(context, listen: false)
-            .selectedOrganization!;
+            .selectedOrganization;
+    if (organization == null) {
+      return;
+    }
     final data = await supabase
         .from("invoices")
         .select('*')
@@ -91,6 +94,32 @@ class _Dashboard extends State<Dashboard> {
 
     Organization? organization =
         Provider.of<OrganizationProvider>(context).selectedOrganization;
+
+    List<Organization> organizations =
+        Provider.of<OrganizationProvider>(context).organizations;
+
+    if (organizations.isEmpty) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "No Organization Found!",
+                style: ShadTheme.of(context).textTheme.p,
+              ),
+              ShadButton(
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/onboarding');
+                },
+                child: const Text('Create or Join Organization'),
+              )
+            ],
+          ),
+        ),
+      );
+    }
 
     if (organization == null) {
       return const Scaffold(
